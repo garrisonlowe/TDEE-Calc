@@ -1108,6 +1108,9 @@ def render_my_profile_tab():
         st.session_state.authenticated = False
         st.session_state.username = None
         st.session_state.user_profile = None
+        # Clear cookie on logout
+        cookie_manager = stx.CookieManager()
+        cookie_manager.delete('tdee_username')
         st.rerun()
 
 
@@ -1119,6 +1122,9 @@ def main():
         initial_sidebar_state="expanded"
     )
     
+    # Initialize cookie manager
+    cookie_manager = stx.CookieManager()
+    
     # Initialize session state
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
@@ -1126,6 +1132,48 @@ def main():
         st.session_state.show_create_account = False
     if 'show_login_dialog' not in st.session_state:
         st.session_state.show_login_dialog = False
+    
+    # Auto-login from cookie if exists and not already authenticated
+    if not st.session_state.authenticated:
+        stored_username = cookie_manager.get('tdee_username')
+        if stored_username:
+            # Auto-login user
+            auth = AuthManager()
+            # Get user data by authenticating (re-fetch from sheets)
+            try:
+                all_users = auth.users_worksheet.get_all_values()
+                for row in all_users[1:]:  # Skip header
+                    if row and row[0] == stored_username:
+                        user_data = {
+                            'display_name': row[2],
+                            'sex': row[3],
+                            'height_ft': int(row[4]) if row[4] else 5,
+                            'height_in': float(row[5]) if row[5] else 9.0,
+                            'weight_lbs': float(row[6]) if row[6] else 180.0,
+                            'age': int(row[7]) if row[7] else 26,
+                            'body_fat_pct': float(row[8]) if row[8] else 19.0,
+                            'daily_steps': int(row[9]) if row[9] else 4500,
+                            'step_pace': row[10] if row[10] else 'Average',
+                            'job_type': row[11] if row[11] else 'Desk Job',
+                            'sedentary_hours': float(row[12]) if row[12] else 10.0,
+                            'workouts_per_week': float(row[13]) if row[13] else 3.0,
+                            'workout_duration': int(row[14]) if row[14] else 77,
+                            'workout_type': row[15] if row[15] else 'Heavy Lifting',
+                            'workout_intensity': row[16] if row[16] else 'High',
+                            'daily_protein': int(row[17]) if row[17] else 172,
+                            'daily_carbs': int(row[18]) if row[18] else 196,
+                            'daily_fat': int(row[19]) if row[19] else 41,
+                            'daily_calories': int(row[20]) if row[20] else 1840,
+                            'sleep_hours': float(row[21]) if row[21] else 9.0,
+                            'sleep_quality': row[22] if row[22] else 'Good'
+                        }
+                        st.session_state.authenticated = True
+                        st.session_state.username = stored_username
+                        st.session_state.user_profile = user_data
+                        break
+            except:
+                # If auto-login fails, just continue as guest
+                pass
     
     # Show login dialog if requested
     if st.session_state.show_login_dialog:
