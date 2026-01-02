@@ -103,7 +103,7 @@ class TDEECalculator:
         stride_length_m = stride_length_cm / 100
         
         # Calculate distance walked
-        distance_m = (steps / 2) * stride_length_m  # steps/2 = number of strides
+        distance_m = steps * stride_length_m  # each step = one stride
         distance_km = distance_m / 1000
         
         # Estimate time based on pace
