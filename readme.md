@@ -5,7 +5,9 @@ Research-backed, highly accurate TDEE (Total Daily Energy Expenditure) calculato
 
 ## 🚀 Quick Start
 
-### Option 1: Launch Script
+### Link to App! -> 
+
+<!-- ### Option 1: Launch Script
 ```bash
 chmod +x run_calculator.sh
 ./run_calculator.sh
@@ -16,7 +18,7 @@ chmod +x run_calculator.sh
 streamlit run tdee_app.py
 ```
 
-The app will automatically open in your browser at `http://localhost:8501`
+The app will automatically open in your browser at `http://localhost:8501` -->
 
 ## What Makes This Different
 

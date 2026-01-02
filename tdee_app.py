@@ -325,10 +325,35 @@ def render_tdee_calculator_tab():
 def render_daily_tracker_tab():
     """Render the Daily Tracker tab"""
     st.header("📝 Daily Tracker")
+    
+    # User selector at the top
+    st.markdown("---")
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        # Get list of users from session state or default
+        if 'users' not in st.session_state:
+            st.session_state.users = ["Garrison", "Gary"]
+        
+        selected_user = st.selectbox(
+            "👤 Select User",
+            st.session_state.users,
+            key="user_selector"
+        )
+    
+    with col2:
+        # Add new user
+        with st.expander("➕ Add User"):
+            new_user = st.text_input("New username", key="new_user_input")
+            if st.button("Add", key="add_user_btn"):
+                if new_user and new_user not in st.session_state.users:
+                    st.session_state.users.append(new_user)
+                    st.success(f"Added {new_user}!")
+                    st.rerun()
+    
     st.markdown("Track your daily metrics and see weekly averages")
     
-    # Initialize tracker
-    tracker = DailyTracker()
+    # Initialize tracker with selected user
+    tracker = DailyTracker(user=selected_user)
     
     # Date selector
     col1, col2 = st.columns([3, 1])

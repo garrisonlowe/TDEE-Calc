@@ -14,17 +14,19 @@ from google.oauth2.service_account import Credentials
 
 
 class DailyTracker:
-    def __init__(self, use_sheets: bool = True, sheet_name: str = "TDEE Tracker Data"):
+    def __init__(self, use_sheets: bool = True, sheet_name: str = "TDEE Tracker Data", user: str = "Default"):
         """
         Initialize tracker with Google Sheets or JSON fallback
         
         Args:
             use_sheets: If True, use Google Sheets. If False or credentials missing, use JSON
             sheet_name: Name of the Google Sheet to use
+            user: Username to separate data (creates separate worksheet per user)
         """
         self.use_sheets = use_sheets
         self.sheet_name = sheet_name
-        self.data_file = "tracker_data.json"
+        self.user = user
+        self.data_file = f"tracker_data_{user}.json"  # Separate JSON file per user
         self.worksheet = None
         
         if use_sheets:
@@ -99,17 +101,18 @@ class DailyTracker:
             )
         
         # Get or create the main worksheet
+        worksheet_name = f"Entries - {self.user}"
         try:
-            worksheet = spreadsheet.worksheet("Entries")
+            worksheet = spreadsheet.worksheet(worksheet_name)
         except gspread.WorksheetNotFound:
-            worksheet = spreadsheet.add_worksheet(title="Entries", rows=1000, cols=20)
+            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows=1000, cols=20)
             # Add header row
             headers = ['date', 'weight', 'calories', 'protein', 'carbs', 'fat', 'steps', 
                       'sleep_hours', 'sleep_quality', 'water_oz', 'workout_done', 
                       'workout_type', 'workout_duration', 'rest_time', 'training_style', 
                       'energy_level', 'notes']
             worksheet.update('A1:Q1', [headers])
-            print("Created 'Entries' worksheet with headers")
+            print(f"Created '{worksheet_name}' worksheet with headers")
         
         return worksheet
     
