@@ -550,12 +550,18 @@ def render_daily_tracker_tab():
                 if 'weight' in df.columns and df['weight'].notna().any():
                     weight_data = df[['date', 'weight']].dropna()
                     
+                    # Format dates as strings (date only, no time)
+                    weight_data['date_str'] = weight_data['date'].dt.strftime('%Y-%m-%d')
+                    
+                    # Calculate width: 100px per data point, minimum 800px
+                    chart_width = max(800, len(weight_data) * 100)
+                    
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
-                        x=weight_data['date'],
+                        x=weight_data['date_str'],
                         y=weight_data['weight'],
                         mode='lines+markers',
-                        marker=dict(size=6),
+                        marker=dict(size=8),
                         line=dict(width=2)
                     ))
                     
@@ -563,9 +569,10 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Weight (lbs)',
                         height=400,
+                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
-                        xaxis=dict(fixedrange=True),
+                        xaxis=dict(fixedrange=True, type='category'),
                         yaxis=dict(fixedrange=True)
                     )
                     
@@ -575,7 +582,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=True, config=config)
+                    st.plotly_chart(fig, use_container_width=False, config=config)
                     st.caption(f"Weight trend over {len(weight_data)} days tracked")
                 else:
                     st.info("No weight data available for charting")
@@ -594,14 +601,20 @@ def render_daily_tracker_tab():
                 if cols_to_plot:
                     nutrition_data = df[['date'] + cols_to_plot].dropna()
                     
+                    # Format dates as strings (date only, no time)
+                    nutrition_data['date_str'] = nutrition_data['date'].dt.strftime('%Y-%m-%d')
+                    
+                    # Calculate width: 100px per data point, minimum 800px
+                    chart_width = max(800, len(nutrition_data) * 100)
+                    
                     fig = go.Figure()
                     for col in cols_to_plot:
                         fig.add_trace(go.Scatter(
-                            x=nutrition_data['date'],
+                            x=nutrition_data['date_str'],
                             y=nutrition_data[col],
                             mode='lines+markers',
                             name=col.capitalize(),
-                            marker=dict(size=6),
+                            marker=dict(size=8),
                             line=dict(width=2)
                         ))
                     
@@ -609,9 +622,10 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Amount',
                         height=400,
+                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
-                        xaxis=dict(fixedrange=True),
+                        xaxis=dict(fixedrange=True, type='category'),
                         yaxis=dict(fixedrange=True)
                     )
                     
@@ -621,7 +635,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=True, config=config)
+                    st.plotly_chart(fig, use_container_width=False, config=config)
                     st.caption(f"Calories and macronutrient intake over {len(nutrition_data)} days tracked")
                 else:
                     st.info("No nutrition data available for charting")
@@ -630,12 +644,18 @@ def render_daily_tracker_tab():
                 if 'steps' in df.columns and df['steps'].notna().any():
                     steps_data = df[['date', 'steps']].dropna()
                     
+                    # Format dates as strings (date only, no time)
+                    steps_data['date_str'] = steps_data['date'].dt.strftime('%Y-%m-%d')
+                    
+                    # Calculate width: 100px per data point, minimum 800px
+                    chart_width = max(800, len(steps_data) * 100)
+                    
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
-                        x=steps_data['date'],
+                        x=steps_data['date_str'],
                         y=steps_data['steps'],
                         mode='lines+markers',
-                        marker=dict(size=6, color='green'),
+                        marker=dict(size=8, color='green'),
                         line=dict(width=2, color='green')
                     ))
                     
@@ -643,9 +663,10 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Steps',
                         height=400,
+                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
-                        xaxis=dict(fixedrange=True),
+                        xaxis=dict(fixedrange=True, type='category'),
                         yaxis=dict(fixedrange=True)
                     )
                     
@@ -655,7 +676,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=True, config=config)
+                    st.plotly_chart(fig, use_container_width=False, config=config)
                     st.caption(f"Daily step count over {len(steps_data)} days tracked")
                 else:
                     st.info("No step data available for charting")
@@ -664,12 +685,18 @@ def render_daily_tracker_tab():
                 if 'sleep_hours' in df.columns and df['sleep_hours'].notna().any():
                     sleep_data = df[['date', 'sleep_hours']].dropna()
                     
+                    # Format dates as strings (date only, no time)
+                    sleep_data['date_str'] = sleep_data['date'].dt.strftime('%Y-%m-%d')
+                    
+                    # Calculate width: 100px per data point, minimum 800px
+                    chart_width = max(800, len(sleep_data) * 100)
+                    
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
-                        x=sleep_data['date'],
+                        x=sleep_data['date_str'],
                         y=sleep_data['sleep_hours'],
                         mode='lines+markers',
-                        marker=dict(size=6, color='purple'),
+                        marker=dict(size=8, color='purple'),
                         line=dict(width=2, color='purple')
                     ))
                     
@@ -677,9 +704,10 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Sleep Hours',
                         height=400,
+                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
-                        xaxis=dict(fixedrange=True),
+                        xaxis=dict(fixedrange=True, type='category'),
                         yaxis=dict(fixedrange=True)
                     )
                     
@@ -689,7 +717,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=True, config=config)
+                    st.plotly_chart(fig, use_container_width=False, config=config)
                     st.caption(f"Sleep hours over {len(sleep_data)} days tracked")
                     
                     # Add optimal sleep reference line info
@@ -710,12 +738,18 @@ def render_daily_tracker_tab():
                     energy_df = df[['date', 'energy_level']].dropna()
                     energy_df['energy_numeric'] = energy_df['energy_level'].map(energy_map)
                     
+                    # Format dates as strings (date only, no time)
+                    energy_df['date_str'] = energy_df['date'].dt.strftime('%Y-%m-%d')
+                    
+                    # Calculate width: 100px per data point, minimum 800px
+                    chart_width = max(800, len(energy_df) * 100)
+                    
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
-                        x=energy_df['date'],
+                        x=energy_df['date_str'],
                         y=energy_df['energy_numeric'],
                         mode='lines+markers',
-                        marker=dict(size=6, color='orange'),
+                        marker=dict(size=8, color='orange'),
                         line=dict(width=2, color='orange')
                     ))
                     
@@ -723,9 +757,10 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Energy Level',
                         height=400,
+                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
-                        xaxis=dict(fixedrange=True),
+                        xaxis=dict(fixedrange=True, type='category'),
                         yaxis=dict(
                             tickmode='array',
                             tickvals=[1, 2, 3, 4, 5],
@@ -740,7 +775,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=True, config=config)
+                    st.plotly_chart(fig, use_container_width=False, config=config)
                     st.caption(f"Energy levels over {len(energy_df)} days tracked")
                 else:
                     st.info("No energy level data available for charting")
