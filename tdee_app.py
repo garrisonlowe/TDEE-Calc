@@ -342,7 +342,7 @@ def render_daily_tracker_tab():
     
     with col2:
         # Add new user
-        st.markdown("<br>", unsafe_allow_html=True)  # Fine-tuned spacing
+        st.markdown("<br><div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
         with st.expander("➕ Add User"):
             new_user = st.text_input("New username", key="new_user_input")
             if st.button("Add", key="add_user_btn"):
@@ -361,12 +361,12 @@ def render_daily_tracker_tab():
     with col1:
         entry_date = st.date_input("Entry Date", datetime.now().date())
     with col2:
-        st.markdown("<br>", unsafe_allow_html=True)  # Fine-tuned spacing
+        st.markdown("<br><div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
         if st.button("Yesterday", type="secondary"):
             entry_date = (datetime.now() - timedelta(days=1)).date()
             st.rerun()
     with col3:
-        st.markdown("<br>", unsafe_allow_html=True)  # Fine-tuned spacing
+        st.markdown("<br><div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
         if st.button("Today", type="primary"):
             entry_date = datetime.now().date()
             st.rerun()
