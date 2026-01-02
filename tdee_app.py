@@ -210,7 +210,7 @@ def render_tdee_calculator_tab():
     
     st.markdown(f"""
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 20px;">
-            <h1 style="color: white; margin: 0; font-size: 4em;">{tdee_to_display:.0f} cals per day</h1>
+            <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE:{tdee_to_display:.0f} calories per day</h1>
             <p style="color: off-white; margin: 5px 0 0 0; font-size: 1.2em;">calories/day</p>
             <p style="color: #e0e0e0; margin: 5px 0 0 0; font-size: 0.9em;">{tdee_source}</p>
         </div>
@@ -247,7 +247,7 @@ def render_tdee_calculator_tab():
             total_sleep_impact = bmr_impact + neat_impact
             
             st.markdown(f"""
-                <div style="background-color: #fff3cd; padding: 15px; border-left: 5px solid #ffc107; border-radius: 5px; margin: 20px 0;">
+                <div style="background: linear-gradient(135deg, #E84625 0%, #FF6B4A 100%); padding: 15px; border-left: 5px solid #C4371F; border-radius: 5px; margin: 20px 0; color: white;">
                     <strong>💤 Sleep Impact: -{total_sleep_impact:.0f} cal/day</strong><br>
                     {sleep_adj['metabolic_note']}<br>
                     <small>Sleeping {sleep_adj['sleep_hours']} hrs with {sleep_adj['sleep_quality']} quality</small>
