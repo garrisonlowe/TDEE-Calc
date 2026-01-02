@@ -958,8 +958,13 @@ def render_create_account_dialog():
             }
             
             if auth.create_user(new_username, new_password, user_data):
-                st.success("Account created successfully! You can now close this and log in.")
+                # Auto-login the user after account creation
+                st.session_state.authenticated = True
+                st.session_state.username = new_username
+                st.session_state.user_profile = user_data
                 st.session_state.show_create_account_dialog = False
+                st.success("Account created successfully! You are now logged in.")
+                st.rerun()
             else:
                 st.error("Username already exists or creation failed")
 
@@ -1157,10 +1162,16 @@ def main():
     # Show login dialog if flag is set (BEFORE tabs)
     if st.session_state.get('show_login_dialog', False):
         render_login_dialog()
+        # Clear flag immediately after showing dialog so it doesn't reopen on every interaction
+        if st.session_state.get('show_login_dialog', False):
+            st.session_state.show_login_dialog = False
     
     # Show create account dialog if flag is set (BEFORE tabs)
     if st.session_state.get('show_create_account_dialog', False):
         render_create_account_dialog()
+        # Clear flag immediately after showing dialog so it doesn't reopen on every interaction
+        if st.session_state.get('show_create_account_dialog', False):
+            st.session_state.show_create_account_dialog = False
     
     # Track current tab with session state
     if 'current_tab' not in st.session_state:
