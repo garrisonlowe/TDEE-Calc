@@ -864,119 +864,103 @@ def render_daily_tracker_tab(selected_user: str):
         st.info("👉 No data yet for this week. Start tracking to see weekly averages!")
 
 
-@st.dialog("🔐 Login / Create Account")
+@st.dialog("🔐 Login")
 def render_login_dialog():
     """Render login dialog"""
+    st.markdown("### Login to Your Account")
     
-    # Show create account form if flag is set
-    if st.session_state.get('show_create_account', False):
-        st.markdown("### Create New Account")
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
         
-        with st.form("create_account_form"):
-            new_username = st.text_input("Username", key="new_account_username")
-            new_password = st.text_input("Password", type="password", key="new_account_password")
-            confirm_password = st.text_input("Confirm Password", type="password", key="confirm_password")
-            
-            st.markdown("---")
-            st.markdown("**Your Default Profile Settings**")
-            
-            col_a, col_b = st.columns(2)
-            with col_a:
-                sex = st.selectbox("Sex", ["Male", "Female"])
-                age = st.number_input("Age", 15, 100, 26)
-                height_ft = st.number_input("Height (ft)", 4, 7, 5)
-                height_in = st.number_input("Height (in)", 0.0, 11.9, 9.0, 0.1)
-                weight_lbs = st.number_input("Weight (lbs)", 80.0, 500.0, 200.0, 0.1)
-            
-            with col_b:
-                body_fat_pct = st.number_input("Body Fat %", 0.0, 60.0, 28.0, 0.1)
-                daily_steps = st.number_input("Daily Steps", 0, 50000, 4000, 100)
-                daily_calories = st.number_input("Daily Calories", 0, 10000, 2200)
-                sleep_hours = st.number_input("Sleep (hrs)", 3.0, 12.0, 7.0, 0.5)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                submit_btn = st.form_submit_button("Create Account", type="primary", use_container_width=True)
-            with col2:
-                cancel_btn = st.form_submit_button("Back to Login", use_container_width=True)
-            
-            if submit_btn:
-                if not new_username or not new_password:
-                    st.error("Please fill in all required fields")
-                elif new_password != confirm_password:
-                    st.error("Passwords do not match")
-                elif len(new_password) < 6:
-                    st.error("Password must be at least 6 characters")
+        login_btn = st.form_submit_button("Login", type="primary", use_container_width=True)
+        
+        if login_btn:
+            if username and password:
+                auth = AuthManager()
+                user_data = auth.authenticate(username, password)
+                if user_data:
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.session_state.user_profile = user_data
+                    st.session_state.show_login_dialog = False
+                    st.success("Login successful!")
+                    st.rerun()
                 else:
-                    # Create user
-                    auth = AuthManager()
-                    user_data = {
-                        'display_name': new_username,
-                        'sex': sex,
-                        'height_ft': height_ft,
-                        'height_in': height_in,
-                        'weight_lbs': weight_lbs,
-                        'age': age,
-                        'body_fat_pct': body_fat_pct,
-                        'daily_steps': daily_steps,
-                        'daily_calories': daily_calories,
-                        'sleep_hours': sleep_hours,
-                        'step_pace': 'Average',
-                        'job_type': 'Desk Job',
-                        'sedentary_hours': 10,
-                        'workouts_per_week': 2,
-                        'workout_duration': 45,
-                        'workout_type': 'Heavy Lifting',
-                        'workout_intensity': 'Moderate',
-                        'daily_protein': 100,
-                        'daily_carbs': 250,
-                        'daily_fat': 80,
-                        'sleep_quality': 'Fair'
-                    }
-                    
-                    if auth.create_user(new_username, new_password, user_data):
-                        st.success("Account created successfully! Please log in.")
-                        st.session_state.show_create_account = False
-                        st.rerun()
-                    else:
-                        st.error("Username already exists or creation failed")
-            
-            if cancel_btn:
-                st.session_state.show_create_account = False
-                st.rerun()
+                    st.error("Invalid username or password")
+            else:
+                st.error("Please enter both username and password")
+
+
+@st.dialog("📝 Create Account")
+def render_create_account_dialog():
+    """Render create account dialog"""
+    st.markdown("### Create New Account")
     
-    else:
-        # Login form
-        st.markdown("### Login to Your Account")
+    with st.form("create_account_form"):
+        new_name = st.text_input("Name")
+        new_username = st.text_input("Username")
+        new_password = st.text_input("Password", type="password")
+        confirm_password = st.text_input("Confirm Password", type="password")
         
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                login_btn = st.form_submit_button("Login", type="primary", use_container_width=True)
-            with col2:
-                create_btn = st.form_submit_button("Create Account", use_container_width=True)
-            
-            if login_btn:
-                if username and password:
-                    auth = AuthManager()
-                    user_data = auth.authenticate(username, password)
-                    if user_data:
-                        st.session_state.authenticated = True
-                        st.session_state.username = username
-                        st.session_state.user_profile = user_data
-                        st.success("Login successful!")
-                        st.rerun()
-                    else:
-                        st.error("Invalid username or password")
+        st.markdown("---")
+        st.markdown("**Your Default Profile Settings**")
+        
+        col_a, col_b = st.columns(2)
+        with col_a:
+            sex = st.selectbox("Sex", ["Male", "Female"])
+            age = st.number_input("Age", 15, 100, 26)
+            height_ft = st.number_input("Height (ft)", 4, 7, 5)
+            height_in = st.number_input("Height (in)", 0.0, 11.9, 9.0, 0.1)
+            weight_lbs = st.number_input("Weight (lbs)", 80.0, 500.0, 200.0, 0.1)
+        
+        with col_b:
+            body_fat_pct = st.number_input("Body Fat %", 0.0, 60.0, 28.0, 0.1)
+            daily_steps = st.number_input("Daily Steps", 0, 50000, 4000, 100)
+            daily_calories = st.number_input("Daily Calories", 0, 10000, 2200)
+            sleep_hours = st.number_input("Sleep (hrs)", 3.0, 12.0, 7.0, 0.5)
+        
+        submit_btn = st.form_submit_button("Create Account", type="primary", use_container_width=True)
+        
+        if submit_btn:
+            if not new_name or not new_username or not new_password:
+                st.error("Please fill in all required fields")
+            elif new_password != confirm_password:
+                st.error("Passwords do not match")
+            elif len(new_password) < 6:
+                st.error("Password must be at least 6 characters")
+            else:
+                # Create user
+                auth = AuthManager()
+                user_data = {
+                    'display_name': new_name,
+                    'sex': sex,
+                    'height_ft': height_ft,
+                    'height_in': height_in,
+                    'weight_lbs': weight_lbs,
+                    'age': age,
+                    'body_fat_pct': body_fat_pct,
+                    'daily_steps': daily_steps,
+                    'daily_calories': daily_calories,
+                    'sleep_hours': sleep_hours,
+                    'step_pace': 'Average',
+                    'job_type': 'Desk Job',
+                    'sedentary_hours': 10,
+                    'workouts_per_week': 2,
+                    'workout_duration': 45,
+                    'workout_type': 'Heavy Lifting',
+                    'workout_intensity': 'Moderate',
+                    'daily_protein': 100,
+                    'daily_carbs': 250,
+                    'daily_fat': 80,
+                    'sleep_quality': 'Fair'
+                }
+                
+                if auth.create_user(new_username, new_password, user_data):
+                    st.success("Account created successfully! You can now close this and log in.")
+                    st.session_state.show_create_account_dialog = False
                 else:
-                    st.error("Please enter both username and password")
-            
-            if create_btn:
-                st.session_state.show_create_account = True
-                st.rerun()
+                    st.error("Username already exists or creation failed")
 
 
 def render_my_profile_tab():
@@ -1030,7 +1014,7 @@ def render_my_profile_tab():
         
         with col1:
             st.markdown("**Basic Info**")
-            display_name = st.text_input("Display Name", value=profile.get('display_name', ''))
+            display_name = st.text_input("Name", value=profile.get('display_name', ''))
             sex = st.selectbox("Sex", ["Male", "Female"], index=0 if profile.get('sex') == 'Male' else 1)
             age = st.number_input("Age", 15, 100, int(profile.get('age', 26)))
             
@@ -1156,10 +1140,16 @@ def main():
                 st.session_state.user_profile = None
                 st.rerun()
         else:
-            # Show login button if not logged in
-            if st.button("🔐 Login", type="primary", use_container_width=True):
-                st.session_state.show_login_dialog = True
-                st.rerun()
+            # Show login and create account buttons if not logged in
+            col_login_btn, col_create_btn = st.columns(2)
+            with col_login_btn:
+                if st.button("🔐 Login", type="primary", use_container_width=True):
+                    st.session_state.show_login_dialog = True
+                    st.rerun()
+            with col_create_btn:
+                if st.button("📝 Create Account", type="secondary", use_container_width=True):
+                    st.session_state.show_create_account_dialog = True
+                    st.rerun()
     
     st.markdown("---")
     
@@ -1220,6 +1210,14 @@ def main():
             st.error("VERSION.md file not found!")
         except Exception as e:
             st.error(f"Error loading Version history: {str(e)}")
+    
+    # Show login dialog if flag is set
+    if st.session_state.get('show_login_dialog', False):
+        render_login_dialog()
+    
+    # Show create account dialog if flag is set
+    if st.session_state.get('show_create_account_dialog', False):
+        render_create_account_dialog()
 
 
 if __name__ == "__main__":
