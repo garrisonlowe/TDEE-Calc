@@ -356,13 +356,19 @@ def render_daily_tracker_tab():
     tracker = DailyTracker(user=selected_user)
     
     # Date selector
-    col1, col2 = st.columns([3, 1])
+    col1, col2, col3 = st.columns([3, 1, 1])
     with col1:
-        entry_date = st.date_input("Entry Date", datetime.now())
+        entry_date = st.date_input("Entry Date", datetime.now().date())
     with col2:
+        st.markdown("<br>", unsafe_allow_html=True)  # Fine-tuned spacing
+        if st.button("Yesterday", type="secondary"):
+            entry_date = (datetime.now() - timedelta(days=1)).date()
+            st.rerun()
+    with col3:
         st.markdown("<br>", unsafe_allow_html=True)  # Fine-tuned spacing
         if st.button("Today", type="primary"):
             entry_date = datetime.now().date()
+            st.rerun()
     
     date_str = entry_date.strftime('%Y-%m-%d')
     
@@ -550,11 +556,8 @@ def render_daily_tracker_tab():
                 if 'weight' in df.columns and df['weight'].notna().any():
                     weight_data = df[['date', 'weight']].dropna()
                     
-                    # Format dates as strings (date only, no time)
-                    weight_data['date_str'] = weight_data['date'].dt.strftime('%Y-%m-%d')
-                    
-                    # Calculate width: 100px per data point, minimum 800px
-                    chart_width = max(800, len(weight_data) * 100)
+                    # Format dates as strings (MMM-DD format)
+                    weight_data['date_str'] = weight_data['date'].dt.strftime('%b-%d')
                     
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
@@ -569,7 +572,6 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Weight (lbs)',
                         height=400,
-                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
                         xaxis=dict(fixedrange=True, type='category'),
@@ -582,7 +584,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=False, config=config)
+                    st.plotly_chart(fig, use_container_width=True, config=config)
                     st.caption(f"Weight trend over {len(weight_data)} days tracked")
                 else:
                     st.info("No weight data available for charting")
@@ -601,11 +603,8 @@ def render_daily_tracker_tab():
                 if cols_to_plot:
                     nutrition_data = df[['date'] + cols_to_plot].dropna()
                     
-                    # Format dates as strings (date only, no time)
-                    nutrition_data['date_str'] = nutrition_data['date'].dt.strftime('%Y-%m-%d')
-                    
-                    # Calculate width: 100px per data point, minimum 800px
-                    chart_width = max(800, len(nutrition_data) * 100)
+                    # Format dates as strings (MMM-DD format)
+                    nutrition_data['date_str'] = nutrition_data['date'].dt.strftime('%b-%d')
                     
                     fig = go.Figure()
                     for col in cols_to_plot:
@@ -622,7 +621,6 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Amount',
                         height=400,
-                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
                         xaxis=dict(fixedrange=True, type='category'),
@@ -635,7 +633,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=False, config=config)
+                    st.plotly_chart(fig, use_container_width=True, config=config)
                     st.caption(f"Calories and macronutrient intake over {len(nutrition_data)} days tracked")
                 else:
                     st.info("No nutrition data available for charting")
@@ -644,11 +642,8 @@ def render_daily_tracker_tab():
                 if 'steps' in df.columns and df['steps'].notna().any():
                     steps_data = df[['date', 'steps']].dropna()
                     
-                    # Format dates as strings (date only, no time)
-                    steps_data['date_str'] = steps_data['date'].dt.strftime('%Y-%m-%d')
-                    
-                    # Calculate width: 100px per data point, minimum 800px
-                    chart_width = max(800, len(steps_data) * 100)
+                    # Format dates as strings (MMM-DD format)
+                    steps_data['date_str'] = steps_data['date'].dt.strftime('%b-%d')
                     
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
@@ -663,7 +658,6 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Steps',
                         height=400,
-                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
                         xaxis=dict(fixedrange=True, type='category'),
@@ -676,7 +670,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=False, config=config)
+                    st.plotly_chart(fig, use_container_width=True, config=config)
                     st.caption(f"Daily step count over {len(steps_data)} days tracked")
                 else:
                     st.info("No step data available for charting")
@@ -685,11 +679,8 @@ def render_daily_tracker_tab():
                 if 'sleep_hours' in df.columns and df['sleep_hours'].notna().any():
                     sleep_data = df[['date', 'sleep_hours']].dropna()
                     
-                    # Format dates as strings (date only, no time)
-                    sleep_data['date_str'] = sleep_data['date'].dt.strftime('%Y-%m-%d')
-                    
-                    # Calculate width: 100px per data point, minimum 800px
-                    chart_width = max(800, len(sleep_data) * 100)
+                    # Format dates as strings (MMM-DD format)
+                    sleep_data['date_str'] = sleep_data['date'].dt.strftime('%b-%d')
                     
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
@@ -704,7 +695,6 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Sleep Hours',
                         height=400,
-                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
                         xaxis=dict(fixedrange=True, type='category'),
@@ -717,7 +707,7 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=False, config=config)
+                    st.plotly_chart(fig, use_container_width=True, config=config)
                     st.caption(f"Sleep hours over {len(sleep_data)} days tracked")
                     
                     # Add optimal sleep reference line info
@@ -738,11 +728,8 @@ def render_daily_tracker_tab():
                     energy_df = df[['date', 'energy_level']].dropna()
                     energy_df['energy_numeric'] = energy_df['energy_level'].map(energy_map)
                     
-                    # Format dates as strings (date only, no time)
-                    energy_df['date_str'] = energy_df['date'].dt.strftime('%Y-%m-%d')
-                    
-                    # Calculate width: 100px per data point, minimum 800px
-                    chart_width = max(800, len(energy_df) * 100)
+                    # Format dates as strings (MMM-DD format)
+                    energy_df['date_str'] = energy_df['date'].dt.strftime('%b-%d')
                     
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
@@ -757,7 +744,6 @@ def render_daily_tracker_tab():
                         xaxis_title='Date',
                         yaxis_title='Energy Level',
                         height=400,
-                        width=chart_width,
                         hovermode='x unified',
                         dragmode='pan',
                         xaxis=dict(fixedrange=True, type='category'),
@@ -775,10 +761,108 @@ def render_daily_tracker_tab():
                         'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
                     }
                     
-                    st.plotly_chart(fig, use_container_width=False, config=config)
+                    st.plotly_chart(fig, use_container_width=True, config=config)
                     st.caption(f"Energy levels over {len(energy_df)} days tracked")
                 else:
                     st.info("No energy level data available for charting")
+            
+            # Add expandable section to view/edit all entries
+            st.markdown("---")
+            with st.expander("📋 View & Edit All Entries", expanded=False):
+                st.info(f"Showing entries for: **{selected_user}**")
+                all_entries = tracker.get_all_entries()
+                if all_entries:
+                    # Create a DataFrame for display
+                    display_df = pd.DataFrame(all_entries)
+                    
+                    # Reorder columns for better readability
+                    column_order = ['date', 'weight', 'calories', 'protein', 'carbs', 'fat', 
+                                  'steps', 'sleep_hours', 'sleep_quality', 'energy_level', 
+                                  'workout_done', 'workout_type', 'workout_duration']
+                    
+                    # Keep only columns that exist
+                    column_order = [col for col in column_order if col in display_df.columns]
+                    display_df = display_df[column_order]
+                    
+                    # Sort by date descending (most recent first)
+                    display_df = display_df.sort_values('date', ascending=False)
+                    
+                    st.dataframe(
+                        display_df,
+                        use_container_width=True,
+                        hide_index=True
+                    )
+                    
+                    st.markdown("---")
+                    st.markdown("**Edit an Entry:**")
+                    
+                    # Select date to edit
+                    dates_list = sorted([entry['date'] for entry in all_entries], reverse=True)
+                    selected_edit_date = st.selectbox(
+                        "Select date to edit:",
+                        dates_list,
+                        key="edit_date_selector"
+                    )
+                    
+                    if selected_edit_date:
+                        edit_entry = tracker.get_entry(selected_edit_date)
+                        
+                        if edit_entry:
+                            st.info(f"Editing entry for {selected_edit_date}")
+                            
+                            # Create edit form
+                            edit_col1, edit_col2, edit_col3 = st.columns(3)
+                            
+                            with edit_col1:
+                                edit_weight = st.number_input("Weight (lbs)", 0.0, 500.0, 
+                                                            float(edit_entry.get('weight', 180)), 0.1, key="edit_weight")
+                                edit_calories = st.number_input("Calories", 0, 10000, 
+                                                              int(edit_entry.get('calories', 2000)), 10, key="edit_calories")
+                                edit_protein = st.number_input("Protein (g)", 0, 500, 
+                                                             int(edit_entry.get('protein', 150)), 1, key="edit_protein")
+                            
+                            with edit_col2:
+                                edit_carbs = st.number_input("Carbs (g)", 0, 1000, 
+                                                           int(edit_entry.get('carbs', 200)), 1, key="edit_carbs")
+                                edit_fat = st.number_input("Fat (g)", 0, 300, 
+                                                         int(edit_entry.get('fat', 60)), 1, key="edit_fat")
+                                edit_steps = st.number_input("Steps", 0, 50000, 
+                                                           int(edit_entry.get('steps', 5000)), 100, key="edit_steps")
+                            
+                            with edit_col3:
+                                edit_sleep = st.number_input("Sleep (hours)", 0.0, 24.0, 
+                                                           float(edit_entry.get('sleep_hours', 7.5)), 0.5, key="edit_sleep")
+                                edit_energy = st.select_slider("Energy Level",
+                                                             options=["Very Low", "Low", "Moderate", "High", "Very High"],
+                                                             value=edit_entry.get('energy_level', 'Moderate'),
+                                                             key="edit_energy")
+                            
+                            # Update button
+                            if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
+                                updated_data = {
+                                    'weight': edit_weight,
+                                    'calories': edit_calories,
+                                    'protein': edit_protein,
+                                    'carbs': edit_carbs,
+                                    'fat': edit_fat,
+                                    'steps': edit_steps,
+                                    'sleep_hours': edit_sleep,
+                                    'sleep_quality': edit_entry.get('sleep_quality', 'Good'),
+                                    'water_oz': edit_entry.get('water_oz', 80),
+                                    'workout_done': edit_entry.get('workout_done', False),
+                                    'workout_type': edit_entry.get('workout_type'),
+                                    'workout_duration': edit_entry.get('workout_duration', 0),
+                                    'rest_time': edit_entry.get('rest_time'),
+                                    'training_style': edit_entry.get('training_style'),
+                                    'energy_level': edit_energy,
+                                    'notes': edit_entry.get('notes', '')
+                                }
+                                
+                                tracker.add_entry(selected_edit_date, updated_data)
+                                st.success(f"✅ Entry updated for {selected_edit_date}!")
+                                st.rerun()
+                else:
+                    st.info("No entries to display yet. Start tracking!")
         else:
             st.info("📊 Need at least 2 days of data to show trend charts")
     else:
