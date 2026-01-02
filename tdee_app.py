@@ -536,10 +536,6 @@ def render_daily_tracker_tab():
         all_entries = tracker.get_all_entries()
         
         if len(all_entries) > 1:
-            import pandas as pd
-            import matplotlib.pyplot as plt
-            import matplotlib.dates as mdates
-            
             # Create DataFrame for charting
             df = pd.DataFrame(all_entries)
             df['date'] = pd.to_datetime(df['date'])
@@ -766,7 +762,7 @@ def main():
     st.markdown("Your personalized fitness companion")
     
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "📖 Read Me!"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "⚡ Quick Reference", "📖 Read Me!"])
     
     with tab1:
         render_tdee_calculator_tab()
@@ -775,6 +771,17 @@ def main():
         render_daily_tracker_tab()
     
     with tab3:
+        # Display the Quick Reference Guide
+        try:
+            with open('QUICK_REFERENCE.md', 'r', encoding='utf-8') as f:
+                quick_ref_content = f.read()
+            st.markdown(quick_ref_content, unsafe_allow_html=True)
+        except FileNotFoundError:
+            st.error("QUICK_REFERENCE.md file not found!")
+        except Exception as e:
+            st.error(f"Error loading Quick Reference: {str(e)}")
+    
+    with tab4:
         # Display the README content
         try:
             with open('readme.md', 'r', encoding='utf-8') as f:

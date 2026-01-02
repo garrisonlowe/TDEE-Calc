@@ -1,28 +1,64 @@
-# Daily Tracker - Quick Reference Card
+# Quick Reference Guide
 
 ## 🏃 30-Second Daily Workflow
 
-1. **Open app** → Click "📝 Daily Tracker" tab
-2. **Update weight** (only if you measured)
-3. **Update calories** (if different from 1,840)
-4. **Check workout box** if you lifted today
+1. **Open app** → Navigate to "📝 Daily Tracker" tab
+2. **Select your user** from the dropdown (Garrison, Gary, or your added user)
+3. **Click date picker** or use "Today" button
+4. **Update fields** that changed from defaults
 5. **Click "💾 Save Entry"**
-6. **Done!**
+6. **Done!** ✅
 
 ---
 
-## ⏰ Best Practices
+## 👥 Multi-User Setup
 
-### Daily (Morning):
-- [ ] Weigh yourself (after bathroom, before eating)
-- [ ] Open tracker
-- [ ] Save yesterday's data
+The app supports multiple users with completely separate data:
 
-### Weekly (Sunday):
-- [ ] Review weekly averages
-- [ ] Compare to goals
-- [ ] Plan next week
-- [ ] Backup `tracker_data.json`
+1. **Switch Users**: Use dropdown at top of Daily Tracker tab
+2. **Add New User**: Click "Add New User" expander
+3. **Each User Gets**:
+   - Separate Google Sheets worksheet
+   - Independent charts and analytics
+   - Own tracking history
+   - No data mixing
+
+Perfect for families or coaching clients!
+
+---
+
+## 📊 Tabs Overview
+
+### 1️⃣ TDEE Calculator
+- Calculate your Total Daily Energy Expenditure
+- Dual BMR formulas (Mifflin-St Jeor & Katch-McArdle)
+- Macro-specific TEF calculation
+- Activity breakdown (steps, job, workouts)
+- Weight trend validation (GOLD STANDARD)
+- Calorie targets for goals
+
+### 2️⃣ Daily Tracker
+- Log daily metrics (weight, calories, macros, steps, sleep, energy)
+- View 5 interactive charts:
+  - Weight Progress
+  - Calories & Macros
+  - Daily Steps
+  - Sleep Duration
+  - Energy Levels
+- Pan/scroll through entire history
+- Cloud sync via Google Sheets
+- Multi-user support
+
+### 3️⃣ Quick Reference (This Tab!)
+- Fast lookup for common tasks
+- Best practices and tips
+- Troubleshooting guide
+
+### 4️⃣ Read Me!
+- Full documentation
+- Research citations
+- Technical details
+- How calculations work
 
 ---
 
@@ -35,112 +71,171 @@ Protein: 172g
 Carbs: 196g
 Fat: 41g
 Steps: 4,500
-Sleep: 7.5 hrs (Good)
-Workout: 3-4x/week, 75-80 min, Heavy lifting
+Sleep: 9 hrs (Good)
+Energy: 4 (Good)
+Workout: 3x/week, 77 min, Heavy lifting
 ```
 
-Only change what's different!
+Only change what's different from your typical day!
 
 ---
 
-## 📊 What to Check Weekly
+## ⏰ Best Practices
 
-1. **Average Weight** → Should align with goals
-2. **Average Calories** → Consistency is key
-3. **Average Sleep** → Target 7-8 hrs
-4. **Workouts** → Hitting 3-4x/week?
-5. **Energy Level** → Red flag if consistently low
+### Daily (Morning):
+- [ ] Weigh yourself (after bathroom, before eating/drinking)
+- [ ] Open tracker on your device
+- [ ] Select your user
+- [ ] Save today's data (or yesterday's if you forgot)
+
+### Weekly (Sunday):
+- [ ] Review charts in Daily Tracker tab
+- [ ] Check weight trend
+- [ ] Compare calories to goals
+- [ ] Update TDEE Calculator with new average weight
+- [ ] Plan adjustments for next week
+
+### Monthly:
+- [ ] Recalculate TDEE if weight changed 10+ lbs
+- [ ] Review energy trends
+- [ ] Adjust calorie targets if needed
+
+---
+
+## 📈 Using the Charts
+
+All charts support **pan/scroll** (zoom disabled for clean viewing):
+
+1. **Weight Chart**: Track overall trend, ignore daily fluctuations
+2. **Calories & Macros**: See if you're hitting targets consistently
+3. **Steps Chart**: Identify activity patterns
+4. **Sleep Chart**: Correlate sleep with energy/performance
+5. **Energy Chart**: Spot red flags (consistent low energy)
+
+**Pro Tip**: Look for correlations! Low energy after poor sleep? Less steps on low-calorie days?
 
 ---
 
 ## 🔥 Power User Tips
 
-**Weigh Daily** → Averages smooth out fluctuations
-**Track Everything** → Even "bad" days matter
-**Use Notes Field** → Capture context ("leg day destroyed me")
-**Review Trends** → Weekly patterns > daily obsession
-**Be Consistent** → Same time, same conditions
+**Weigh Daily** → Weekly averages smooth out water fluctuations  
+**Track Everything** → Even "off" days matter for trends  
+**Use Cloud Sync** → Data persists forever, accessible anywhere  
+**Select Correct User** → Double-check dropdown before saving  
+**Review Charts Weekly** → Patterns > individual days  
+**Be Consistent** → Same time, same conditions (morning weigh-ins)  
+**Trust the Process** → 2+ weeks of data = accurate TDEE
 
 ---
 
-## 📈 After 2 Weeks
+## 📊 After 2+ Weeks of Tracking
 
-You can use weight trend data in TDEE Calculator tab:
-1. Calculate actual TDEE from weight change
-2. Adjust targets based on real results
-3. ±2-5% accuracy (better than any formula!)
+Use your tracked data in the TDEE Calculator tab:
 
----
+1. Go to **Weight Trend Validation** section
+2. Enter **start/end dates** (14+ days recommended)
+3. Enter **start/end weights**
+4. Enter **average daily calories**
+5. Get **actual TDEE** (±2-5% accuracy!)
 
-## 🚨 Red Flags
-
-Watch for these patterns:
-- Weight dropping >2 lbs/week → increase calories
-- Energy consistently "Very Low" → eat more or sleep more
-- Sleep <6.5 hrs regularly → fix this ASAP
-- Skipping workouts frequently → reduce volume or intensity
+This is more accurate than any formula! 🏆
 
 ---
 
-## 💾 Don't Forget!
+## 🚨 Red Flags to Watch
 
-**BACKUP YOUR DATA**
-Copy `tracker_data.json` to cloud storage weekly!
+Monitor these patterns in your data:
+
+- **Weight dropping >2 lbs/week** → Increase calories (muscle loss risk)
+- **Energy consistently 1-2 ("Very Low" to "Low")** → Eat more or sleep more
+- **Sleep <7 hrs regularly** → Fix this ASAP (affects BMR & recovery)
+- **Steps decreasing over time** → Sign of adaptive thermogenesis
+- **Workouts suffering** → Reduce volume or increase calories
 
 ---
 
-## 🎯 Goals Reference
+## ☁️ Cloud Storage & Data
 
-### Fat Loss (Moderate):
-- TDEE - 500 cal = ~1 lb/week
-- Track: weight dropping, energy stable, workouts strong
+**Automatic Backup**: Data saves to Google Sheets automatically  
+**Access Anywhere**: Use the deployed app link on any device  
+**Never Lose Data**: Cloud storage persists across browser sessions  
+**Multi-Device**: Start on phone, continue on computer  
+
+**Local Fallback**: If Google Sheets fails, app uses JSON files locally
+
+---
+
+## 🎯 Goal-Specific Tracking
+
+### Fat Loss (Moderate - Recommended):
+- **Target**: TDEE - 500 cal = ~1 lb/week
+- **Track**: Weight trending down, energy stable (3-4), lifts maintained
+- **Red Flag**: Energy below 3 consistently, strength dropping
+
+### Aggressive Fat Loss:
+- **Target**: TDEE - 750 cal = ~1.5 lbs/week  
+- **Track**: Higher diet fatigue, may need diet breaks
+- **Red Flag**: Energy below 2, strength tanking, sleep suffering
 
 ### Lean Bulk:
-- TDEE + 250 cal = ~0.5 lb/week
-- Track: weight up slowly, lifts progressing, not getting fat
+- **Target**: TDEE + 200 cal = ~0.5 lb/week
+- **Track**: Weight up slowly, lifts progressing, waist stable
+- **Red Flag**: Gaining >1 lb/week, waist growing too fast
+
+### Standard Bulk:
+- **Target**: TDEE + 350 cal = ~0.75 lb/week
+- **Track**: Faster gains, accept slightly more fat
+- **Red Flag**: Gaining >1.5 lbs/week
 
 ### Maintenance:
-- Hit TDEE ±100 cal
-- Track: weight stable, performance maintained
+- **Target**: Hit TDEE ±100 cal
+- **Track**: Weight stable (±2 lbs range), performance maintained
+- **Red Flag**: Unintended weight change over 2+ weeks
 
 ---
 
 ## 📞 Common Questions
 
-**Q: Do I need to track every day?**
-A: Yes! Consistency = success. Even 30 seconds daily > perfect but inconsistent.
+**Q: Do I need to track every day?**  
+A: Yes! Consistency = success. Even incomplete data > no data. Trends matter most.
 
-**Q: What if I mess up my diet?**
-A: LOG IT ANYWAY. Data > perfection. Trends matter.
+**Q: What if I mess up my diet?**  
+A: LOG IT ANYWAY. "Bad" days are part of the trend. Never skip tracking.
 
-**Q: My weight jumped 2 lbs overnight!**
-A: Normal. Water, food volume, salt. Check weekly average.
+**Q: My weight jumped 3 lbs overnight!**  
+A: Totally normal. Water retention from sodium, carbs, or new exercise. Check weekly average.
 
-**Q: I forgot to track for 3 days!**
-A: Fill in what you remember. Estimates > nothing.
+**Q: I forgot to track for several days!**  
+A: Fill in what you remember. Estimates > nothing. Get back on track today.
 
----
+**Q: Which user should I select?**  
+A: Pick your name from dropdown. Each person gets separate data/charts.
 
-## ⚡ Keyboard Shortcuts
+**Q: How do I add my dad/spouse to the app?**  
+A: Daily Tracker tab → "Add New User" expander → Enter their name → Add User
 
-When in a number field:
-- `↑` / `↓` = increment/decrement
-- `Tab` = next field
-- `Enter` = submit form
+**Q: Can I access this on my phone?**  
+A: Yes! Use the deployed link: https://tdee-calc.streamlit.app/
+
+**Q: What if Google Sheets isn't working?**  
+A: App automatically falls back to local JSON storage. Your data is safe.
+
+**Q: How accurate is the TDEE calculator?**  
+A: Formula-only: ±10%. With 2+ weeks weight trend data: ±2-5% (lab-quality!)
 
 ---
 
 ## 🎓 Remember
 
-> "What gets measured gets improved."
+> "What gets measured gets improved." - Peter Drucker
 
-You're not just tracking numbers.
-You're building self-awareness.
-You're creating accountability.
-You're engineering results.
+You're not just tracking numbers.  
+You're building **self-awareness**.  
+You're creating **accountability**.  
+You're engineering **results**.
 
-**Start today. Your future self will thank you!**
+**Start today. Your future self will thank you!** 💪
 
 ---
 
-Print this or save as bookmark for quick reference! 📌
+📌 **Keep this tab open for quick reference while tracking!**
