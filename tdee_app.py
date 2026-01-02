@@ -125,6 +125,17 @@ def main():
             
             st.markdown("---")
             
+            # Sleep Information
+            st.subheader("😴 Sleep")
+            sleep_hours = st.slider("Average Sleep (hours/night)", 3.0, 12.0, 7.5, 0.5,
+                                   help="Optimal: 7-8 hours. <5 hrs significantly impacts metabolism")
+            sleep_quality = st.select_slider("Sleep Quality", 
+                                            options=["Poor", "Fair", "Good", "Excellent"],
+                                            value="Good",
+                                            help="Quality affects metabolic recovery")
+            
+            st.markdown("---")
+            
             # Workout Information
             st.subheader("🏋️ Workouts")
             workouts_per_week = st.number_input("Workouts Per Week", min_value=0, max_value=14, value=4, step=1)
@@ -173,6 +184,7 @@ def main():
             workout_map = {"Heavy Lifting": "heavy_lifting", "HIIT": "hiit", 
                           "Circuit Training": "circuit_training", "Steady Cardio": "steady_cardio"}
             intensity_map = {"High": "high", "Moderate": "moderate"}
+            quality_map = {"Poor": "poor", "Fair": "fair", "Good": "good", "Excellent": "excellent"}
             
             # Calculate TDEE
             calc = TDEECalculator()
@@ -193,7 +205,9 @@ def main():
                 daily_protein_g=daily_protein,
                 daily_carbs_g=daily_carbs,
                 daily_fat_g=daily_fat,
-                daily_calories=daily_calories
+                daily_calories=daily_calories,
+                sleep_hours=sleep_hours,
+                sleep_quality=quality_map[sleep_quality]
             )
             
             # Validate with weight trend if available
@@ -249,6 +263,29 @@ def main():
                 st.metric("NEAT (Daily Movement)", f"{neat_total:.0f} cal",
                          f"{results['breakdown_pct']['neat']:.1f}%")
                 st.caption(f"Steps: {results['neat_from_steps']:.0f} cal")
+            
+            # Sleep Impact Display
+            if 'sleep_adjustment' in results:
+                sleep_adj = results['sleep_adjustment']
+                if sleep_adj['bmr_multiplier'] < 1.0 or sleep_adj['neat_multiplier'] < 1.0:
+                    bmr_impact = (1.0 - sleep_adj['bmr_multiplier']) * results['bmr_base']
+                    neat_impact = (1.0 - sleep_adj['neat_multiplier']) * (results['neat_from_steps'] / sleep_adj['neat_multiplier'] + results['additional_neat'] / sleep_adj['neat_multiplier'])
+                    total_sleep_impact = bmr_impact + neat_impact
+                    
+                    st.markdown(f"""
+                        <div class="warning-box">
+                            <strong>💤 Sleep Impact: -{total_sleep_impact:.0f} cal/day</strong><br>
+                            {sleep_adj['metabolic_note']}<br>
+                            <small>Sleeping {sleep_adj['sleep_hours']} hrs with {sleep_adj['sleep_quality']} quality</small>
+                        </div>
+                    """, unsafe_allow_html=True)
+                elif sleep_adj['sleep_hours'] >= 7 and sleep_adj['sleep_hours'] <= 8:
+                    st.markdown(f"""
+                        <div class="success-box">
+                            <strong>✅ Optimal Sleep</strong><br>
+                            {sleep_adj['metabolic_note']}
+                        </div>
+                    """, unsafe_allow_html=True)
             
             col4, col5 = st.columns(2)
             
@@ -355,6 +392,31 @@ def main():
         
         A diet with 200g protein burns ~100 more calories daily than one with 100g protein!
         
+        ### Why Sleep Matters
+        
+        Sleep has MASSIVE metabolic effects that most calculators ignore:
+        
+        **Sleep Deprivation (<5 hours) Causes:**
+        - 30%+ drop in insulin sensitivity (just 4 days!)
+        - 18% decrease in leptin (satiety hormone)
+        - 28% increase in ghrelin (hunger hormone)
+        - Eating 385+ more calories per day
+        - 3.7x obesity risk in men, 2.3x in women
+        - Reduced BMR and NEAT (less fidgeting/movement)
+        
+        **Optimal Sleep (7-8 hours):**
+        - Normal metabolic function
+        - Proper hormone regulation
+        - Adequate recovery from exercise
+        - Optimal NEAT levels
+        
+        **Long Sleep (>9 hours):**
+        - Associated with fatigue
+        - Reduced daily activity
+        - May indicate underlying issues
+        
+        This calculator adjusts your BMR and NEAT based on sleep quantity and quality.
+        
         ### Individual Variation
         
         Even people with identical stats can have BMRs that differ by 10-15% (±300 calories).
@@ -408,6 +470,42 @@ def main():
         - Effects dissipate by 24 hours
         - This calculator uses conservative estimates based on peer-reviewed studies
         
+        ### Sleep Impact on Metabolism
+        
+        **Research-Based Adjustments:**
+        
+        Sleep affects both BMR and NEAT based on peer-reviewed studies:
+        
+        - **<5 hours**: Severe restriction
+          - BMR: -8% adjustment
+          - NEAT: -20% adjustment
+          - 3.7x obesity risk (men), 2.3x (women)
+          - 30%+ drop in insulin sensitivity
+        
+        - **5-6 hours**: Moderate restriction
+          - BMR: -5% adjustment
+          - NEAT: -12% adjustment
+          - Increased appetite, reduced activity
+        
+        - **6-7 hours**: Mild restriction
+          - BMR: -3% adjustment
+          - NEAT: -7% adjustment
+          - Minor metabolic impact
+        
+        - **7-8 hours**: OPTIMAL
+          - No adjustment
+          - Optimal metabolic function
+        
+        - **>9 hours**: Long sleep
+          - BMR: -2% adjustment
+          - NEAT: -5% adjustment
+          - Associated with fatigue
+        
+        **Sleep Quality** also matters:
+        - Poor quality: Additional -3% penalty
+        - Fair quality: Additional -1% penalty
+        - Good/Excellent: No penalty
+        
         ### Key Research Citations
         
         - Mifflin et al. (1990) - BMR equation development
@@ -415,6 +513,10 @@ def main():
         - Johnstone et al. (2005) - Metabolic variation factors
         - Trexler et al. (2014) - Metabolic adaptation in athletes
         - Bersheim & Bahr (2003) - EPOC review
+        - Sharma & Kavuru (2010) - Sleep and metabolism overview
+        - Spiegel et al. (2004) - Sleep restriction effects on leptin/ghrelin
+        - Knutson et al. (2007) - Sleep duration and obesity risk
+        - Nedeltcheva et al. (2010) - Sleep and diet-induced fat loss
         - Multiple 2014-2021 EPOC studies
         
         ### Accuracy Expectations

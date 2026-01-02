@@ -222,6 +222,68 @@ class TDEECalculator:
         
         return base
     
+    def calculate_sleep_metabolic_adjustment(self, sleep_hours: float, 
+                                            sleep_quality: str = 'good') -> Dict:
+        """
+        Calculate metabolic adjustments based on sleep
+        
+        Research shows:
+        - Sleep deprivation reduces BMR and increases appetite
+        - <5 hrs/night: 3.7x obesity risk (men), 2.3x (women)
+        - 4 days of poor sleep: 30%+ drop in insulin sensitivity
+        - Sleep deprivation: eat 385 more cal/day, burn fewer
+        - Optimal: 7-8 hours
+        
+        Conservative adjustments based on research
+        """
+        bmr_multiplier = 1.0
+        neat_multiplier = 1.0
+        metabolic_note = ""
+        
+        quality_map = {
+            'poor': 0.97,      # Poor quality reduces effectiveness
+            'fair': 0.99,
+            'good': 1.0,
+            'excellent': 1.0
+        }
+        
+        quality_factor = quality_map.get(sleep_quality, 1.0)
+        
+        # Adjust based on sleep duration
+        if sleep_hours >= 9:
+            # Very long sleep associated with fatigue
+            bmr_multiplier = 0.98
+            neat_multiplier = 0.95
+            metabolic_note = "Long sleep (9+ hrs) associated with reduced activity"
+        elif sleep_hours >= 7:
+            # Optimal range
+            bmr_multiplier = 1.0 * quality_factor
+            neat_multiplier = 1.0 * quality_factor
+            metabolic_note = "Optimal sleep duration for metabolism"
+        elif sleep_hours >= 6:
+            # Mild restriction
+            bmr_multiplier = 0.97 * quality_factor
+            neat_multiplier = 0.93 * quality_factor
+            metabolic_note = "Mild sleep restriction - minor metabolic impact"
+        elif sleep_hours >= 5:
+            # Moderate restriction
+            bmr_multiplier = 0.95 * quality_factor
+            neat_multiplier = 0.88 * quality_factor
+            metabolic_note = "Moderate sleep restriction - significant metabolic impact"
+        else:
+            # Severe restriction (<5 hours)
+            bmr_multiplier = 0.92 * quality_factor
+            neat_multiplier = 0.80 * quality_factor
+            metabolic_note = "Severe sleep restriction - major metabolic consequences"
+        
+        return {
+            'bmr_multiplier': bmr_multiplier,
+            'neat_multiplier': neat_multiplier,
+            'metabolic_note': metabolic_note,
+            'sleep_hours': sleep_hours,
+            'sleep_quality': sleep_quality
+        }
+    
     def calculate_tdee_formula_based(self, 
                                      weight_kg: float,
                                      height_cm: float,
@@ -239,22 +301,30 @@ class TDEECalculator:
                                      daily_protein_g: float = 0,
                                      daily_carbs_g: float = 0,
                                      daily_fat_g: float = 0,
-                                     daily_calories: float = 0) -> Dict:
+                                     daily_calories: float = 0,
+                                     sleep_hours: float = 7.5,
+                                     sleep_quality: str = 'good') -> Dict:
         """
         Calculate TDEE using formula-based approach with all factors
         """
+        # Calculate sleep impact
+        sleep_adjustment = self.calculate_sleep_metabolic_adjustment(sleep_hours, sleep_quality)
+        
         # Calculate BMR using both methods
         bmr_mifflin = self.calculate_bmr_mifflin(weight_kg, height_cm, age, sex)
         
         if body_fat_pct:
             lean_mass = self.calculate_lean_mass(weight_kg, body_fat_pct)
             bmr_katch = self.calculate_bmr_katch(lean_mass)
-            bmr = bmr_katch  # Use Katch-McArdle when body fat % available
+            bmr_base = bmr_katch  # Use Katch-McArdle when body fat % available
             bmr_method = "Katch-McArdle (more accurate with body fat %)"
         else:
-            bmr = bmr_mifflin
+            bmr_base = bmr_mifflin
             bmr_katch = None
             bmr_method = "Mifflin-St Jeor"
+        
+        # Apply sleep adjustment to BMR
+        bmr = bmr_base * sleep_adjustment['bmr_multiplier']
         
         # Calculate TEF
         if daily_calories > 0 and (daily_protein_g + daily_carbs_g + daily_fat_g > 0):
@@ -266,9 +336,10 @@ class TDEECalculator:
             tef = daily_calories * 0.10
             tef_data = {'total_tef': tef, 'tef_percentage': 10.0}
         
-        # Calculate NEAT from steps
-        neat_from_steps = self.calculate_neat_from_steps(daily_steps, weight_kg, 
-                                                         height_cm, step_pace)
+        # Calculate NEAT from steps (base, then apply sleep adjustment)
+        neat_from_steps_base = self.calculate_neat_from_steps(daily_steps, weight_kg, 
+                                                              height_cm, step_pace)
+        neat_from_steps = neat_from_steps_base * sleep_adjustment['neat_multiplier']
         
         # Calculate EAT (calories during workouts)
         if workouts_per_week > 0:
@@ -286,13 +357,12 @@ class TDEECalculator:
             eat_daily = 0
             epoc_daily = 0
         
-        # Estimate additional NEAT from job/lifestyle
+        # Estimate additional NEAT from job/lifestyle (with sleep adjustment)
         neat_multiplier = self.estimate_neat_adjustment(job_type, sedentary_hours)
-        # Additional NEAT beyond BMR and steps
-        # Conservative estimate: (BMR * multiplier - BMR) gives us the extra from daily movement
-        additional_neat = bmr * (neat_multiplier - 1.0) - neat_from_steps
-        if additional_neat < 0:
-            additional_neat = 0
+        additional_neat_base = bmr_base * (neat_multiplier - 1.0) - neat_from_steps_base
+        if additional_neat_base < 0:
+            additional_neat_base = 0
+        additional_neat = additional_neat_base * sleep_adjustment['neat_multiplier']
         
         # Calculate total TDEE
         tdee = bmr + tef + neat_from_steps + additional_neat + eat_daily + epoc_daily
@@ -300,6 +370,7 @@ class TDEECalculator:
         return {
             'tdee': tdee,
             'bmr': bmr,
+            'bmr_base': bmr_base,
             'bmr_mifflin': bmr_mifflin,
             'bmr_katch': bmr_katch,
             'bmr_method': bmr_method,
@@ -309,6 +380,7 @@ class TDEECalculator:
             'additional_neat': additional_neat,
             'eat_daily': eat_daily,
             'epoc_daily': epoc_daily,
+            'sleep_adjustment': sleep_adjustment,
             'breakdown_pct': {
                 'bmr': (bmr / tdee * 100),
                 'tef': (tef / tdee * 100),
