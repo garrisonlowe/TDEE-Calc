@@ -5,7 +5,7 @@ Research-backed, highly accurate TDEE (Total Daily Energy Expenditure) calculato
 
 ## 🚀 Quick Start
 
-### Link to App! -> 
+### Link to App! -> https://tdee-calc.streamlit.app/
 
 <!-- ### Option 1: Launch Script
 ```bash
