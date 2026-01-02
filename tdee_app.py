@@ -337,7 +337,7 @@ def render_daily_tracker_tab(selected_user: str):
         entry_date = st.date_input("Entry Date", st.session_state.entry_date)
     
     # Date buttons directly below
-    col_btn1, col_btn2, col_btn3 = st.columns([0.5, 0.5, 3])
+    col_btn1, col_btn2, col_btn3 = st.columns([0.4, 0.4, 3.2])
     with col_btn1:
         if st.button("Yesterday", type="secondary"):
             st.session_state.entry_date = (datetime.now() - timedelta(days=1)).date()
@@ -744,7 +744,7 @@ def render_daily_tracker_tab(selected_user: str):
                                                              key="edit_energy")
                             
                             # Update and Delete buttons
-                            btn_col1, btn_col2 = st.columns(2)
+                            btn_col1, btn_col2, btn_col3 = st.columns([0.4, 0.4, 3.2])
                             with btn_col1:
                                 if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
                                     updated_data = {
