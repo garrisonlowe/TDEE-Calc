@@ -206,7 +206,7 @@ def render_tdee_calculator_tab():
     
     # Main TDEE number
     tdee_to_display = validation['actual_tdee'] if validation else results['tdee']
-    tdee_source = "FROM WEIGHT DATA ✅" if validation else "FORMULA ESTIMATE"
+    tdee_source = "FROM WEIGHT DATA ✅" if validation else "FROM FORMULA ESTIMATE"
     
     st.markdown(f"""
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 20px;">
@@ -377,71 +377,94 @@ def render_daily_tracker_tab(selected_user: str):
     # Input form with defaults
     st.subheader("Today's Metrics")
     
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("**⚖️ Weight & Intake**")
+    # Weight & Intake Section (Horizontal)
+    st.markdown("**⚖️ Weight & Intake**")
+    col_w1, col_w2, col_w3, col_w4, col_w5 = st.columns(5)
+    with col_w1:
         weight = st.number_input("Morning Weight (lbs)", 100.0, 500.0,
                                 existing_entry.get('weight', DEFAULTS['weight_lbs']) if existing_entry else DEFAULTS['weight_lbs'],
                                 0.1, key="weight_input")
+    with col_w2:
         calories = st.number_input("Total Calories", 0, 10000,
                                   existing_entry.get('calories', DEFAULTS['daily_calories']) if existing_entry else DEFAULTS['daily_calories'],
                                   key="cal_input")
+    with col_w3:
         protein = st.number_input("Protein (g)", 0, 500,
                                  existing_entry.get('protein', DEFAULTS['daily_protein']) if existing_entry else DEFAULTS['daily_protein'],
                                  key="protein_input")
+    with col_w4:
         carbs = st.number_input("Carbs (g)", 0, 1000,
                                existing_entry.get('carbs', DEFAULTS['daily_carbs']) if existing_entry else DEFAULTS['daily_carbs'],
                                key="carbs_input")
+    with col_w5:
         fat = st.number_input("Fat (g)", 0, 300,
                              existing_entry.get('fat', DEFAULTS['daily_fat']) if existing_entry else DEFAULTS['daily_fat'],
                              key="fat_input")
     
-    with col2:
-        st.markdown("**🚶 Activity & Sleep**")
+    st.markdown("---")
+    
+    # Activity & Sleep Section (Horizontal)
+    st.markdown("**🚶 Activity & Sleep**")
+    col_a1, col_a2, col_a3, col_a4 = st.columns(4)
+    with col_a1:
         steps = st.number_input("Steps", 0, 50000,
                                existing_entry.get('steps', DEFAULTS['daily_steps']) if existing_entry else DEFAULTS['daily_steps'],
                                100, key="steps_input")
+    with col_a2:
         sleep_hours = st.number_input("Sleep (hours)", 0.0, 24.0,
                                      existing_entry.get('sleep_hours', DEFAULTS['sleep_hours']) if existing_entry else DEFAULTS['sleep_hours'],
                                      0.5, key="sleep_input")
+    with col_a3:
         sleep_quality = st.select_slider("Sleep Quality",
                                         options=["Poor", "Fair", "Good", "Excellent"],
                                         value=existing_entry.get('sleep_quality', DEFAULTS['sleep_quality']) if existing_entry else DEFAULTS['sleep_quality'],
                                         key="sleep_quality_input")
-        
+    with col_a4:
         water_intake = st.number_input("Water (oz)", 0, 300,
                                       existing_entry.get('water_oz', 80) if existing_entry else 80,
                                       key="water_input")
     
-    with col3:
-        st.markdown("**🏋️ Workout**")
+    st.markdown("---")
+    
+    # Workout Section (Horizontal)
+    st.markdown("**🏋️ Workout**")
+    col_workout1, col_workout2 = st.columns([1, 3])
+    with col_workout1:
         workout_done = st.checkbox("Workout Completed",
                                   value=existing_entry.get('workout_done', False) if existing_entry else False,
                                   key="workout_check")
-        
-        if workout_done:
+    
+    if workout_done:
+        col_w1, col_w2, col_w3, col_w4, col_w5 = st.columns(5)
+        with col_w1:
             workout_type = st.selectbox("Workout Type",
                                        ["Heavy Lifting", "HIIT", "Circuit Training", "Steady Cardio", "Other"],
                                        index=0 if not existing_entry else ["Heavy Lifting", "HIIT", "Circuit Training", "Steady Cardio", "Other"].index(existing_entry.get('workout_type', 'Heavy Lifting')),
                                        key="workout_type_input")
+        with col_w2:
             workout_duration = st.number_input("Duration (min)", 0, 300,
                                              existing_entry.get('workout_duration', DEFAULTS['workout_duration']) if existing_entry else DEFAULTS['workout_duration'],
                                              key="workout_duration_input")
+        with col_w3:
             rest_time = st.select_slider("Rest Between Sets",
                                         options=["Short (<60s)", "Moderate (60-90s)", "Long (2-3min)", "Very Long (3-5min)"],
                                         value=existing_entry.get('rest_time', "Long (2-3min)") if existing_entry else "Long (2-3min)",
                                         key="rest_time_input")
+        with col_w4:
             training_style = st.selectbox("Training Style",
                                          ["Low Volume High Intensity", "High Volume Moderate Intensity", "Moderate Volume Moderate Intensity"],
                                          index=0 if not existing_entry else ["Low Volume High Intensity", "High Volume Moderate Intensity", "Moderate Volume Moderate Intensity"].index(existing_entry.get('training_style', 'Low Volume High Intensity')),
                                          key="training_style_input")
-        else:
-            workout_type = None
-            workout_duration = 0
-            rest_time = None
-            training_style = None
-        
+        with col_w5:
+            energy_level = st.select_slider("Energy Level",
+                                           options=["Very Low", "Low", "Moderate", "High", "Very High"],
+                                           value=existing_entry.get('energy_level', "Moderate") if existing_entry else "Moderate",
+                                           key="energy_input")
+    else:
+        workout_type = None
+        workout_duration = 0
+        rest_time = None
+        training_style = None
         energy_level = st.select_slider("Energy Level",
                                        options=["Very Low", "Low", "Moderate", "High", "Very High"],
                                        value=existing_entry.get('energy_level', "Moderate") if existing_entry else "Moderate",
@@ -720,30 +743,40 @@ def render_daily_tracker_tab(selected_user: str):
                                                              value=edit_entry.get('energy_level', 'Moderate'),
                                                              key="edit_energy")
                             
-                            # Update button
-                            if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
-                                updated_data = {
-                                    'weight': edit_weight,
-                                    'calories': edit_calories,
-                                    'protein': edit_protein,
-                                    'carbs': edit_carbs,
-                                    'fat': edit_fat,
-                                    'steps': edit_steps,
-                                    'sleep_hours': edit_sleep,
-                                    'sleep_quality': edit_entry.get('sleep_quality', 'Good'),
-                                    'water_oz': edit_entry.get('water_oz', 80),
-                                    'workout_done': edit_entry.get('workout_done', False),
-                                    'workout_type': edit_entry.get('workout_type'),
-                                    'workout_duration': edit_entry.get('workout_duration', 0),
-                                    'rest_time': edit_entry.get('rest_time'),
-                                    'training_style': edit_entry.get('training_style'),
-                                    'energy_level': edit_energy,
-                                    'notes': edit_entry.get('notes', '')
-                                }
-                                
-                                tracker.add_entry(selected_edit_date, updated_data)
-                                st.success(f"✅ Entry updated for {selected_edit_date}!")
-                                st.rerun()
+                            # Update and Delete buttons
+                            btn_col1, btn_col2 = st.columns(2)
+                            with btn_col1:
+                                if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
+                                    updated_data = {
+                                        'weight': edit_weight,
+                                        'calories': edit_calories,
+                                        'protein': edit_protein,
+                                        'carbs': edit_carbs,
+                                        'fat': edit_fat,
+                                        'steps': edit_steps,
+                                        'sleep_hours': edit_sleep,
+                                        'sleep_quality': edit_entry.get('sleep_quality', 'Good'),
+                                        'water_oz': edit_entry.get('water_oz', 80),
+                                        'workout_done': edit_entry.get('workout_done', False),
+                                        'workout_type': edit_entry.get('workout_type'),
+                                        'workout_duration': edit_entry.get('workout_duration', 0),
+                                        'rest_time': edit_entry.get('rest_time'),
+                                        'training_style': edit_entry.get('training_style'),
+                                        'energy_level': edit_energy,
+                                        'notes': edit_entry.get('notes', '')
+                                    }
+                                    
+                                    tracker.add_entry(selected_edit_date, updated_data)
+                                    st.success(f"✅ Entry updated for {selected_edit_date}!")
+                                    st.rerun()
+                            
+                            with btn_col2:
+                                if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
+                                    if tracker.delete_entry(selected_edit_date):
+                                        st.success(f"✅ Entry deleted for {selected_edit_date}!")
+                                        st.rerun()
+                                    else:
+                                        st.error(f"❌ Failed to delete entry for {selected_edit_date}")
                 else:
                     st.info("No entries to display yet. Start tracking!")
         else:

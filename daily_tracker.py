@@ -199,6 +199,44 @@ class DailyTracker:
             self.data[date] = entry_data
             self.save_data()
     
+    def delete_entry(self, date: str) -> bool:
+        """Delete an entry for a specific date. Returns True if successful."""
+        if self.use_sheets and self.worksheet:
+            try:
+                # Get all records to find if date exists
+                all_records = self.worksheet.get_all_values()
+                
+                # Find row with matching date
+                row_index = None
+                for i, row in enumerate(all_records[1:], start=2):
+                    if row and row[0] == date:
+                        row_index = i
+                        break
+                
+                if row_index:
+                    # Delete the row
+                    self.worksheet.delete_rows(row_index)
+                    return True
+                else:
+                    return False
+                
+            except Exception as e:
+                print(f"Error deleting from Google Sheets: {e}")
+                print("Falling back to JSON")
+                self.use_sheets = False
+                self.data = self.load_data()
+                if date in self.data:
+                    del self.data[date]
+                    self.save_data()
+                    return True
+                return False
+        else:
+            if date in self.data:
+                del self.data[date]
+                self.save_data()
+                return True
+            return False
+    
     def get_entry(self, date: str) -> Optional[Dict]:
         """Get entry for a specific date"""
         if self.use_sheets and self.worksheet:
