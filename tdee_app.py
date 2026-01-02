@@ -218,7 +218,7 @@ def render_tdee_calculator_tab():
     # Component breakdown
     st.subheader("Energy Expenditure Breakdown")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
         st.metric("BMR (Baseline)", f"{results['bmr']:.0f} cal",
@@ -236,6 +236,14 @@ def render_tdee_calculator_tab():
         st.metric("NEAT (Daily Movement)", f"{neat_total:.0f} cal",
                  f"{results['breakdown_pct']['neat']:.1f}%")
         st.caption(f"Steps: {results['neat_from_steps']:.0f} cal")
+    
+    with col4:
+        st.metric("EAT (Exercise)", f"{results['eat_daily']:.0f} cal/day",
+                 f"{results['breakdown_pct']['eat']:.1f}%")
+    
+    with col5:
+        st.metric("EPOC (Afterburn)", f"{results['epoc_daily']:.0f} cal/day",
+                 f"{results['breakdown_pct']['epoc']:.1f}%")
     
     # Sleep Impact Display
     if 'sleep_adjustment' in results:
@@ -259,16 +267,6 @@ def render_tdee_calculator_tab():
                     {sleep_adj['metabolic_note']}
                 </div>
             """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.metric("EAT (Exercise)", f"{results['eat_daily']:.0f} cal/day",
-                 f"{results['breakdown_pct']['eat']:.1f}%")
-    
-    with col2:
-        st.metric("EPOC (Afterburn)", f"{results['epoc_daily']:.0f} cal/day",
-                 f"{results['breakdown_pct']['epoc']:.1f}%")
     
     # Weight trend validation results
     if validation:
@@ -762,26 +760,23 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    st.title("💪 TDEE Calculator & Daily Tracker")
-    st.markdown("Your personalized fitness companion")
-    
-    # Global User Selector
-    st.markdown("---")
-    st.subheader("👤 User Selection")
-    
     # Get list of users from session state or default
     if 'users' not in st.session_state:
         st.session_state.users = ["Garrison", "Gary"]
     
-    col_user1, col_user2, col_user3 = st.columns([1, 1, 2])
-    with col_user1:
+    # Header with user selector on the same row
+    col_title, col_spacer, col_user = st.columns([3, 1, 1])
+    
+    with col_title:
+        st.title("💪 TDEE Calculator & Daily Tracker")
+        st.markdown("Your personalized fitness companion!")
+    
+    with col_user:
         selected_user = st.selectbox(
-            "Select User",
+            "👤 Select User",
             st.session_state.users,
             key="user_selector"
         )
-    
-    with col_user2:
         with st.expander("➕ Add User"):
             new_user = st.text_input("New username", key="new_user_input")
             if st.button("Add", key="add_user_btn"):
@@ -793,7 +788,7 @@ def main():
     st.markdown("---")
     
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "⚡ Quick Reference", "📖 Read Me!", "🔖 Version"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "📖 Read Me!", "⚡ Quick Reference", "🔖 Version"])
     
     with tab1:
         render_tdee_calculator_tab()
@@ -802,17 +797,6 @@ def main():
         render_daily_tracker_tab(selected_user)
     
     with tab3:
-        # Display the Quick Reference Guide
-        try:
-            with open('QUICK_REFERENCE.md', 'r', encoding='utf-8') as f:
-                quick_ref_content = f.read()
-            st.markdown(quick_ref_content, unsafe_allow_html=True)
-        except FileNotFoundError:
-            st.error("QUICK_REFERENCE.md file not found!")
-        except Exception as e:
-            st.error(f"Error loading Quick Reference: {str(e)}")
-    
-    with tab4:
         # Display the README content
         try:
             with open('readme.md', 'r', encoding='utf-8') as f:
@@ -822,6 +806,17 @@ def main():
             st.error("README.md file not found!")
         except Exception as e:
             st.error(f"Error loading README: {str(e)}")
+    
+    with tab4:
+        # Display the Quick Reference Guide
+        try:
+            with open('QUICK_REFERENCE.md', 'r', encoding='utf-8') as f:
+                quick_ref_content = f.read()
+            st.markdown(quick_ref_content, unsafe_allow_html=True)
+        except FileNotFoundError:
+            st.error("QUICK_REFERENCE.md file not found!")
+        except Exception as e:
+            st.error(f"Error loading Quick Reference: {str(e)}")
     
     with tab5:
         # Display the Version history
