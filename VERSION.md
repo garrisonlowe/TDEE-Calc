@@ -1,5 +1,26 @@
 # Version History
 
+## Version 1.0.1 🔐
+**Release Date:** January 2, 2026
+
+### New Features
+
+#### Authentication System
+- **Optional Login**: Use the app as a guest or create an account
+- **Guest Mode**: Instant access with US average defaults (5'9", 200 lbs, age 38)
+- **Create Account**: Save your personal profile with custom defaults
+- **My Profile Tab**: Edit your default settings and change password
+- **Personalized Experience**: Your defaults auto-populate in the TDEE Calculator
+- **Separate Login/Create Account Dialogs**: Clean, easy-to-use interface
+
+#### User Interface Improvements
+- Two-button authentication: Login and Create Account buttons for guests
+- Streamlined dialog system with easy close/cancel options
+- Name field added to user profiles
+- Profile settings persist across sessions
+
+---
+
 ## Version 1.0 🎉
 **Release Date:** January 2, 2026
 

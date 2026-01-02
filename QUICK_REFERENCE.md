@@ -1,80 +1,155 @@
-# Quick Reference Guide
+# 💪 TDEE Calculator - Features & User Guide
 
-## 🏃 30-Second Daily Workflow
+## 🚀 Quick Start
 
-1. **Open app** → Select your user from dropdown at the top (Garrison, Gary, or your added user)
-2. **Navigate to "📝 Daily Tracker" tab**
-3. **Click date picker** or use "Yesterday"/"Today" buttons
-4. **Update fields** that changed from defaults
-5. **Click "💾 Save Entry"**
-6. **Done!** ✅
+### First Time Users
+
+**Option 1: Use as Guest** (Instant Access)
+1. App loads with US average defaults (5'9", 200 lbs, age 38)
+2. Start using the TDEE Calculator immediately
+3. No account required!
+
+**Option 2: Create an Account** (Recommended)
+1. Click **"📝 Create Account"** button at the top
+2. Enter your name, username, and password
+3. Fill in your default profile settings (height, weight, age, etc.)
+4. Click **"Create Account"**
+5. Close the dialog and click **"🔐 Login"** to sign in
+6. Your personalized defaults now auto-populate everywhere!
+
+### Logging In
+- Click **"🔐 Login"** button at the top
+- Enter your username and password
+- You're in! Your profile loads automatically
 
 ---
 
-## 👥 Multi-User Setup
+## 📊 App Features
 
-The app supports multiple users with completely separate data:
+### 1️⃣ TDEE Calculator Tab
 
-1. **Switch Users**: Use dropdown at the top of the app (global, works across all tabs)
-2. **Add New User**: Click "➕ Add User" expander next to user selector
-3. **Each User Gets**:
-   - Separate Google Sheets worksheet
-   - Independent charts and analytics
-   - Own tracking history
+**What it does:**
+Calculates your Total Daily Energy Expenditure - the total calories you burn per day.
+
+**How to use:**
+1. Fill in your information (auto-filled if logged in)
+2. Click **"🧮 Calculate TDEE"** button
+3. Review your results and calorie targets
+
+**What you'll get:**
+- Your estimated TDEE
+- Breakdown of where calories are burned (BMR, TEF, activity, etc.)
+- Calorie targets for fat loss, maintenance, and muscle gain
+- **GOLD STANDARD**: Weight trend validation (if you've been tracking for 2+ weeks)
+
+**Why it's better:**
+- Uses TWO formulas and picks the most accurate one for you
+- Accounts for your actual protein/carb/fat intake (more protein = more calories burned!)
+- Considers your walking pace, job type, workout style
+- Can validate with your real weight change data
+
+---
+
+### 2️⃣ Daily Tracker Tab
+
+**What it does:**
+Track your daily metrics and see your progress over time.
+
+**How to use:**
+1. Select your user from dropdown (or add a new user)
+2. Pick a date (or use Yesterday/Today buttons)
+3. Enter your daily data:
+   - Weight (weigh yourself same time daily - morning is best)
+   - Calories eaten
+   - Protein, carbs, fat
+   - Steps taken
+   - Sleep hours
+   - Energy level (1-5)
+4. Click **"💾 Save Entry"**
+
+**What you'll see:**
+- Interactive charts showing your progress:
+  - Weight trend over time
+  - Daily steps
+  - Sleep duration
+  - Calories and macros
+  - Energy levels
+- Weekly averages
+- All your entries in a table
+
+**Pro Tips:**
+- Track EVERY day, even "bad" days
+- Weigh yourself at the same time daily
+- After 2+ weeks, use your data in the Weight Trend Validation!
+
+---
+
+### 3️⃣ My Profile Tab
+
+**What it does:**
+Edit your personal defaults and change your password.
+
+**How to use:**
+1. Must be logged in (click Login if you're a guest)
+2. Update any of your default settings
+3. Click **"💾 Save Profile"**
+4. To change password: expand "🔒 Change Password" section
+
+**Your defaults include:**
+- Name, sex, age, height, weight
+- Body fat %, daily steps, calories
+- Protein, carbs, fat intake
+- Sleep hours and quality
+- Workout frequency, type, intensity
+
+These values auto-populate in the TDEE Calculator!
+
+---
+
+## 🎯 Common Use Cases
+
+### "I want to lose weight"
+1. Use TDEE Calculator to get your TDEE
+2. Choose a fat loss target (Moderate = 500 cal deficit = 1 lb/week)
+3. Eat that many calories daily
+4. Track in Daily Tracker tab
+5. After 2 weeks, use Weight Trend Validation to confirm your actual TDEE
+6. Adjust calories if needed
+
+### "I want to gain muscle"
+1. Calculate your TDEE
+2. Choose Lean Bulk target (+200 cal = 0.5 lb/week)
+3. Eat that many calories with high protein
+4. Track progress in Daily Tracker
+5. Monitor that weight is going up slowly and lifts are improving
+
+### "I want to maintain my weight"
+1. Calculate your TDEE
+2. Eat at maintenance (your TDEE ± 100 calories)
+3. Track to ensure weight stays stable
+
+### "I've been tracking for 2+ weeks"
+1. Go to TDEE Calculator
+2. Scroll to "📊 Weight Trend Validation" section
+3. Check the box "Use weight trend data"
+4. Enter your start/end weight and calories
+5. Get your ACTUAL TDEE (more accurate than any formula!)
+
+---
+
+## 👥 Multi-User Support
+
+**Perfect for families or coaching!**
+
+In the Daily Tracker tab:
+1. Use the user selector dropdown at the top
+2. Click **"➕ Add User"** to add family members
+3. Each person gets:
+   - Separate tracking data
+   - Independent charts
    - No data mixing
 
-Perfect for families or coaching clients!
-
----
-
-## 📊 Tabs Overview
-
-### 1️⃣ TDEE Calculator
-- Calculate your Total Daily Energy Expenditure
-- Dual BMR formulas (Mifflin-St Jeor & Katch-McArdle)
-- Macro-specific TEF calculation
-- Activity breakdown (steps, job, workouts)
-- Weight trend validation (GOLD STANDARD)
-- Calorie targets for goals
-
-### 2️⃣ Daily Tracker
-- Log daily metrics (weight, calories, macros, steps, sleep, energy)
-- View 3 interactive charts:
-  - Weight Progress
-  - Daily Steps
-  - Sleep Duration
-- Pan/scroll through entire history
-- Cloud sync via Google Sheets
-- Multi-user support
-
-### 3️⃣ Quick Reference (This Tab!)
-- Fast lookup for common tasks
-- Best practices and tips
-- Troubleshooting guide
-
-### 4️⃣ Read Me!
-- Full documentation
-- Research citations
-- Technical details
-- How calculations work
-
----
-
-## 🎯 Your Defaults (Pre-filled)
-
-```
-Weight: 180 lbs
-Calories: 1,840
-Protein: 172g
-Carbs: 196g
-Fat: 41g
-Steps: 4,500
-Sleep: 9 hrs (Good)
-Energy: 4 (Good)
-Workout: 3x/week, 77 min, Heavy lifting
-```
-
-Only change what's different from your typical day!
+**Note:** This is different from creating an account. Daily Tracker users are for tracking multiple people on the same account.
 
 ---
 
@@ -83,14 +158,14 @@ Only change what's different from your typical day!
 ### Daily (Morning):
 - [ ] Weigh yourself (after bathroom, before eating/drinking)
 - [ ] Open tracker on your device
-- [ ] Select your user
+- [ ] Select your user (Daily Tracker)
 - [ ] Save today's data (or yesterday's if you forgot)
 
 ### Weekly (Sunday):
 - [ ] Review charts in Daily Tracker tab
 - [ ] Check weight trend
 - [ ] Compare calories to goals
-- [ ] Update TDEE Calculator with new average weight
+- [ ] Update TDEE Calculator if needed
 - [ ] Plan adjustments for next week
 
 ### Monthly:
@@ -102,13 +177,15 @@ Only change what's different from your typical day!
 
 ## 📈 Using the Charts
 
-All charts support **pan/scroll** (zoom disabled for clean viewing):
+All charts in Daily Tracker support **pan/scroll**:
 
 1. **Weight Chart**: Track overall trend, ignore daily fluctuations
 2. **Steps Chart**: Identify activity patterns
 3. **Sleep Chart**: Correlate sleep with energy/performance
+4. **Calories Chart**: See your intake consistency
+5. **Energy Chart**: Find patterns (low energy after poor sleep?)
 
-**Pro Tip**: Look for correlations! Low energy after poor sleep? Less steps on low-calorie days?
+**Pro Tip**: Look for correlations between charts!
 
 ---
 
@@ -117,24 +194,10 @@ All charts support **pan/scroll** (zoom disabled for clean viewing):
 **Weigh Daily** → Weekly averages smooth out water fluctuations  
 **Track Everything** → Even "off" days matter for trends  
 **Use Cloud Sync** → Data persists forever, accessible anywhere  
-**Select Correct User** → Check user dropdown at top before entering data  
+**Select Correct User** → Check user dropdown before entering data  
 **Review Charts Weekly** → Patterns > individual days  
 **Be Consistent** → Same time, same conditions (morning weigh-ins)  
 **Trust the Process** → 2+ weeks of data = accurate TDEE
-
----
-
-## 📊 After 2+ Weeks of Tracking
-
-Use your tracked data in the TDEE Calculator tab:
-
-1. Go to **Weight Trend Validation** section
-2. Enter **start/end dates** (14+ days recommended)
-3. Enter **start/end weights**
-4. Enter **average daily calories**
-5. Get **actual TDEE** (±2-5% accuracy!)
-
-This is more accurate than any formula! 🏆
 
 ---
 
@@ -144,7 +207,7 @@ Monitor these patterns in your data:
 
 - **Weight dropping >2 lbs/week** → Increase calories (muscle loss risk)
 - **Energy consistently 1-2 ("Very Low" to "Low")** → Eat more or sleep more
-- **Sleep <7 hrs regularly** → Fix this ASAP (affects BMR & recovery)
+- **Sleep <7 hrs regularly** → Fix this ASAP (affects metabolism & recovery)
 - **Steps decreasing over time** → Sign of adaptive thermogenesis
 - **Workouts suffering** → Reduce volume or increase calories
 
@@ -192,6 +255,12 @@ Monitor these patterns in your data:
 
 ## 📞 Common Questions
 
+**Q: Do I need to create an account?**  
+A: No! You can use the app as a guest. But creating an account saves your personal defaults.
+
+**Q: What's the difference between My Profile and Daily Tracker users?**  
+A: My Profile = your account settings. Daily Tracker users = tracking different people (like family members).
+
 **Q: Do I need to track every day?**  
 A: Yes! Consistency = success. Even incomplete data > no data. Trends matter most.
 
@@ -204,24 +273,65 @@ A: Totally normal. Water retention from sodium, carbs, or new exercise. Check we
 **Q: I forgot to track for several days!**  
 A: Fill in what you remember. Estimates > nothing. Get back on track today.
 
-**Q: Which user should I select?**  
-A: Pick your name from dropdown. Each person gets separate data/charts.
-
 **Q: How do I add my dad/spouse to the app?**  
 A: Daily Tracker tab → "Add New User" expander → Enter their name → Add User
 
 **Q: Can I access this on my phone?**  
-A: Yes! Use the deployed link: https://tdee-calc.streamlit.app/
-
-**Q: What if Google Sheets isn't working?**  
-A: App automatically falls back to local JSON storage. Your data is safe.
+A: Yes! Use the deployed link on any device.
 
 **Q: How accurate is the TDEE calculator?**  
 A: Formula-only: ±10%. With 2+ weeks weight trend data: ±2-5% (lab-quality!)
 
 ---
 
-## 🎓 Remember
+## 🎓 Understanding Your Results
+
+### What is TDEE?
+**Total Daily Energy Expenditure** - the total calories you burn in a day, including:
+- **BMR** (60-75%): Calories to keep you alive (heart beating, breathing, etc.)
+- **TEF** (8-15%): Calories burned digesting food (higher with more protein!)
+- **NEAT** (15-30%): Daily movement, fidgeting, walking around
+- **EAT** (5-15%): Actual exercise (gym workouts, sports)
+- **EPOC** (1-5%): "Afterburn" - elevated metabolism after workouts
+
+### Why Two BMR Formulas?
+- **Mifflin-St Jeor**: Best for most people (82% accuracy)
+- **Katch-McArdle**: Best if you know your body fat % and are lean
+
+The calculator automatically picks the better one for you!
+
+### Why Protein Matters
+Same calories, different results:
+
+**Diet A** (100g protein):
+- 2500 calories
+- ~10% TEF = 250 calories burned
+
+**Diet B** (200g protein):
+- 2500 calories  
+- ~12% TEF = 300 calories burned
+
+**50 extra calories burned per day = 5 lbs fat loss per year!**
+
+---
+
+## 🏆 The Weight Trend Validation (GOLD STANDARD)
+
+After 2+ weeks of consistent tracking:
+
+**Example:**
+- You ate 2500 cal/day for 14 days
+- You lost 2.2 lbs
+
+**Math:**
+- Daily deficit = (2.2 lbs × 3500 cal/lb) ÷ 14 days = 550 cal/day
+- **Your actual TDEE = 2500 + 550 = 3050 cal/day**
+
+This bypasses ALL formulas and gives YOUR exact metabolic rate. As accurate as lab testing!
+
+---
+
+## 💡 Remember
 
 > "What gets measured gets improved." - Peter Drucker
 
@@ -234,4 +344,4 @@ You're engineering **results**.
 
 ---
 
-📌 **Keep this tab open for quick reference while tracking!**
+📌 **Keep this tab open for quick reference while using the app!**

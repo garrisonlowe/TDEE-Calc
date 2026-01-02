@@ -897,70 +897,71 @@ def render_create_account_dialog():
     """Render create account dialog"""
     st.markdown("### Create New Account")
     
-    with st.form("create_account_form"):
-        new_name = st.text_input("Name")
-        new_username = st.text_input("Username")
-        new_password = st.text_input("Password", type="password")
-        confirm_password = st.text_input("Confirm Password", type="password")
-        
-        st.markdown("---")
-        st.markdown("**Your Default Profile Settings**")
-        
-        col_a, col_b = st.columns(2)
-        with col_a:
-            sex = st.selectbox("Sex", ["Male", "Female"])
-            age = st.number_input("Age", 15, 100, 26)
-            height_ft = st.number_input("Height (ft)", 4, 7, 5)
-            height_in = st.number_input("Height (in)", 0.0, 11.9, 9.0, 0.1)
-            weight_lbs = st.number_input("Weight (lbs)", 80.0, 500.0, 200.0, 0.1)
-        
-        with col_b:
-            body_fat_pct = st.number_input("Body Fat %", 0.0, 60.0, 28.0, 0.1)
-            daily_steps = st.number_input("Daily Steps", 0, 50000, 4000, 100)
-            daily_calories = st.number_input("Daily Calories", 0, 10000, 2200)
-            sleep_hours = st.number_input("Sleep (hrs)", 3.0, 12.0, 7.0, 0.5)
-        
-        submit_btn = st.form_submit_button("Create Account", type="primary", use_container_width=True)
-        
-        if submit_btn:
-            if not new_name or not new_username or not new_password:
-                st.error("Please fill in all required fields")
-            elif new_password != confirm_password:
-                st.error("Passwords do not match")
-            elif len(new_password) < 6:
-                st.error("Password must be at least 6 characters")
+    # Initialize session state for form data if not exists
+    if 'create_account_data' not in st.session_state:
+        st.session_state.create_account_data = {}
+    
+    new_name = st.text_input("Name", key="ca_name")
+    new_username = st.text_input("Username", key="ca_username")
+    new_password = st.text_input("Password", type="password", key="ca_password")
+    confirm_password = st.text_input("Confirm Password", type="password", key="ca_confirm")
+    
+    st.markdown("---")
+    st.markdown("**Your Default Profile Settings**")
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        sex = st.selectbox("Sex", ["Male", "Female"], key="ca_sex")
+        age = st.number_input("Age", 15, 100, 26, key="ca_age")
+        height_ft = st.number_input("Height (ft)", 4, 7, 5, key="ca_height_ft")
+        height_in = st.number_input("Height (in)", 0.0, 11.9, 9.0, 0.1, key="ca_height_in")
+        weight_lbs = st.number_input("Weight (lbs)", 80.0, 500.0, 200.0, 0.1, key="ca_weight")
+    
+    with col_b:
+        body_fat_pct = st.number_input("Body Fat %", 0.0, 60.0, 28.0, 0.1, key="ca_bf")
+        daily_steps = st.number_input("Daily Steps", 0, 50000, 4000, 100, key="ca_steps")
+        daily_calories = st.number_input("Daily Calories", 0, 10000, 2200, key="ca_cals")
+        sleep_hours = st.number_input("Sleep (hrs)", 3.0, 12.0, 7.0, 0.5, key="ca_sleep")
+    
+    if st.button("Create Account", type="primary", use_container_width=True, key="ca_submit"):
+        if not new_name or not new_username or not new_password:
+            st.error("Please fill in all required fields")
+        elif new_password != confirm_password:
+            st.error("Passwords do not match")
+        elif len(new_password) < 6:
+            st.error("Password must be at least 6 characters")
+        else:
+            # Create user
+            auth = AuthManager()
+            user_data = {
+                'display_name': new_name,
+                'sex': sex,
+                'height_ft': height_ft,
+                'height_in': height_in,
+                'weight_lbs': weight_lbs,
+                'age': age,
+                'body_fat_pct': body_fat_pct,
+                'daily_steps': daily_steps,
+                'daily_calories': daily_calories,
+                'sleep_hours': sleep_hours,
+                'step_pace': 'Average',
+                'job_type': 'Desk Job',
+                'sedentary_hours': 10,
+                'workouts_per_week': 2,
+                'workout_duration': 45,
+                'workout_type': 'Heavy Lifting',
+                'workout_intensity': 'Moderate',
+                'daily_protein': 100,
+                'daily_carbs': 250,
+                'daily_fat': 80,
+                'sleep_quality': 'Fair'
+            }
+            
+            if auth.create_user(new_username, new_password, user_data):
+                st.success("Account created successfully! You can now close this and log in.")
+                st.session_state.show_create_account_dialog = False
             else:
-                # Create user
-                auth = AuthManager()
-                user_data = {
-                    'display_name': new_name,
-                    'sex': sex,
-                    'height_ft': height_ft,
-                    'height_in': height_in,
-                    'weight_lbs': weight_lbs,
-                    'age': age,
-                    'body_fat_pct': body_fat_pct,
-                    'daily_steps': daily_steps,
-                    'daily_calories': daily_calories,
-                    'sleep_hours': sleep_hours,
-                    'step_pace': 'Average',
-                    'job_type': 'Desk Job',
-                    'sedentary_hours': 10,
-                    'workouts_per_week': 2,
-                    'workout_duration': 45,
-                    'workout_type': 'Heavy Lifting',
-                    'workout_intensity': 'Moderate',
-                    'daily_protein': 100,
-                    'daily_carbs': 250,
-                    'daily_fat': 80,
-                    'sleep_quality': 'Fair'
-                }
-                
-                if auth.create_user(new_username, new_password, user_data):
-                    st.success("Account created successfully! You can now close this and log in.")
-                    st.session_state.show_create_account_dialog = False
-                else:
-                    st.error("Username already exists or creation failed")
+                st.error("Username already exists or creation failed")
 
 
 def render_my_profile_tab():
@@ -1158,11 +1159,10 @@ def main():
         st.session_state.current_tab = 0
     
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📊 TDEE Calculator", 
         "📝 Daily Tracker", 
         "👤 My Profile",
-        "📖 Read Me!", 
         "⚡ Quick Reference", 
         "🔖 Version"
     ])
