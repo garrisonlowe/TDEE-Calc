@@ -736,7 +736,7 @@ def render_daily_tracker_tab(selected_user: str):
                                                              key="edit_energy")
                             
                             # Update and Delete buttons
-                            btn_col1, btn_col2, btn_col3 = st.columns([1, 1.5, 1])
+                            btn_col1, btn_col2, btn_col3 = st.columns([0.5, 0.5, 2.5])
                             with btn_col1:
                                 if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
                                     updated_data = {
@@ -762,16 +762,13 @@ def render_daily_tracker_tab(selected_user: str):
                                     st.success(f"✅ Entry updated for {selected_edit_date}!")
                                     st.rerun()
                             
-                            with btn_col3:
-                                # Right-align the delete button within this column
-                                _, right_align = st.columns([2, 1])
-                                with right_align:
-                                    if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
-                                        if tracker.delete_entry(selected_edit_date):
-                                            st.success(f"✅ Entry deleted for {selected_edit_date}!")
-                                            st.rerun()
-                                        else:
-                                            st.error(f"❌ Failed to delete entry for {selected_edit_date}")
+                            with btn_col2:
+                                if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
+                                    if tracker.delete_entry(selected_edit_date):
+                                        st.success(f"✅ Entry deleted for {selected_edit_date}!")
+                                        st.rerun()
+                                    else:
+                                        st.error(f"❌ Failed to delete entry for {selected_edit_date}")
                 else:
                     st.info("No entries to display yet. Start tracking!")
         else:
