@@ -337,7 +337,7 @@ def render_daily_tracker_tab(selected_user: str):
         entry_date = st.date_input("Entry Date", st.session_state.entry_date)
     
     # Date buttons directly below
-    col_btn1, col_btn2, col_btn3 = st.columns([0.3, 0.3, 3.4])
+    col_btn1, col_btn2, col_btn3 = st.columns([0.35, 0.35, 3.3])
     with col_btn1:
         if st.button("Yesterday", type="secondary"):
             st.session_state.entry_date = (datetime.now() - timedelta(days=1)).date()
@@ -514,18 +514,12 @@ def render_daily_tracker_tab(selected_user: str):
             if weekly_avg['avg_weight']:
                 st.metric("Avg Weight", f"{weekly_avg['avg_weight']:.1f} lbs",
                          f"{weekly_avg['weight_change']:.1f} lbs" if weekly_avg['weight_change'] else None)
+        
+        with col2:
             if weekly_avg['avg_calories']:
                 st.metric("Avg Calories", f"{weekly_avg['avg_calories']:.0f} cal")
         
-        with col2:
-            if weekly_avg['avg_protein']:
-                st.metric("Avg Protein", f"{weekly_avg['avg_protein']:.0f}g")
-            if weekly_avg['avg_carbs']:
-                st.metric("Avg Carbs", f"{weekly_avg['avg_carbs']:.0f}g")
-        
         with col3:
-            if weekly_avg['avg_fat']:
-                st.metric("Avg Fat", f"{weekly_avg['avg_fat']:.0f}g")
             if weekly_avg['avg_steps']:
                 st.metric("Avg Steps", f"{weekly_avg['avg_steps']:.0f}")
         
@@ -744,7 +738,7 @@ def render_daily_tracker_tab(selected_user: str):
                                                              key="edit_energy")
                             
                             # Update and Delete buttons
-                            btn_col1, btn_col2, btn_col3 = st.columns([0.45, 0.45, 3.1])
+                            btn_col1, btn_col2, btn_col3 = st.columns([0.5, 2.5, 0.5])
                             with btn_col1:
                                 if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
                                     updated_data = {
@@ -770,7 +764,7 @@ def render_daily_tracker_tab(selected_user: str):
                                     st.success(f"✅ Entry updated for {selected_edit_date}!")
                                     st.rerun()
                             
-                            with btn_col2:
+                            with btn_col3:
                                 if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
                                     if tracker.delete_entry(selected_edit_date):
                                         st.success(f"✅ Entry deleted for {selected_edit_date}!")
