@@ -508,7 +508,7 @@ def render_daily_tracker_tab(selected_user: str):
     weekly_avg = tracker.calculate_weekly_averages(date_str)
     
     if weekly_avg and weekly_avg['days_tracked'] > 0:
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             if weekly_avg['avg_weight']:
@@ -516,14 +516,10 @@ def render_daily_tracker_tab(selected_user: str):
                          f"{weekly_avg['weight_change']:.1f} lbs" if weekly_avg['weight_change'] else None)
         
         with col2:
-            if weekly_avg['avg_calories']:
-                st.metric("Avg Calories", f"{weekly_avg['avg_calories']:.0f} cal")
-        
-        with col3:
             if weekly_avg['avg_steps']:
                 st.metric("Avg Steps", f"{weekly_avg['avg_steps']:.0f}")
         
-        with col4:
+        with col3:
             if weekly_avg['avg_sleep']:
                 st.metric("Avg Sleep", f"{weekly_avg['avg_sleep']:.1f} hrs")
             st.metric("Workouts", f"{weekly_avg['total_workouts']}/{weekly_avg['days_tracked']}")
@@ -738,7 +734,7 @@ def render_daily_tracker_tab(selected_user: str):
                                                              key="edit_energy")
                             
                             # Update and Delete buttons
-                            btn_col1, btn_col2, btn_col3 = st.columns([0.5, 2.5, 0.5])
+                            btn_col1, btn_col2, btn_col3 = st.columns([1, 2, 1])
                             with btn_col1:
                                 if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
                                     updated_data = {
@@ -765,6 +761,8 @@ def render_daily_tracker_tab(selected_user: str):
                                     st.rerun()
                             
                             with btn_col3:
+                                # Empty column for spacing
+                                st.write("")
                                 if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
                                     if tracker.delete_entry(selected_edit_date):
                                         st.success(f"✅ Entry deleted for {selected_edit_date}!")
