@@ -1,7 +1,7 @@
 # 💪 Comprehensive TDEE Calculator - Imperial Edition
 
 ## Overview
-Research-backed, highly accurate TDEE (Total Daily Energy Expenditure) calculator with a modern web interface. Built specifically for Americans who refuse to use the metric system. 🇺🇸
+Research-backed, highly accurate TDEE (Total Daily Energy Expenditure) calculator with a modern web interface. Built specifically for people who couldn't find a good enough TDEE calculator on the internet, like myself. 🇺🇸
 
 ## 🚀 Quick Start
 

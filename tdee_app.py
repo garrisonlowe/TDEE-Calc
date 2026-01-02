@@ -14,30 +14,31 @@ import plotly.graph_objects as go
 # Import the calculator logic and tracker
 from tdee_calculator import TDEECalculator
 from daily_tracker import DailyTracker
+from auth import AuthManager
 
 
-# Garrison's defaults
-DEFAULTS = {
+# Default values for average American man (used when not logged in)
+DEFAULT_USER_DATA = {
     'sex': 'Male',
     'height_ft': 5,
-    'height_in': 11.0,  # Float for number_input compatibility
-    'weight_lbs': 180.0,
-    'age': 26,  # Estimated
-    'body_fat_pct': 19.0,
-    'daily_steps': 4500,
+    'height_in': 9.0,  # Average American male height
+    'weight_lbs': 200.0,  # Average American male weight
+    'age': 38,  # Median age for American men
+    'body_fat_pct': 28.0,  # Average body fat for American men
+    'daily_steps': 4000,  # Average daily steps
     'step_pace': 'Average',
     'job_type': 'Desk Job',
     'sedentary_hours': 10.0,
-    'workouts_per_week': 3.0,
-    'workout_duration': 77,
+    'workouts_per_week': 2.0,  # Average
+    'workout_duration': 45,
     'workout_type': 'Heavy Lifting',
-    'workout_intensity': 'High',
-    'daily_protein': 172,
-    'daily_carbs': 196,
-    'daily_fat': 41,
-    'daily_calories': 1840,
-    'sleep_hours': 9.0,
-    'sleep_quality': 'Good'
+    'workout_intensity': 'Moderate',
+    'daily_protein': 100,
+    'daily_carbs': 250,
+    'daily_fat': 80,
+    'daily_calories': 2200,  # Average calorie intake
+    'sleep_hours': 7.0,  # Average sleep
+    'sleep_quality': 'Fair'
 }
 
 
@@ -65,264 +66,340 @@ def cm_to_feet_inches(cm: float) -> tuple:
     return feet, inches
 
 
+def get_user_defaults():
+    """Get current user's default values from profile (logged in) or US averages (guest)"""
+    if st.session_state.get('authenticated', False) and 'user_profile' in st.session_state:
+        profile = st.session_state.user_profile
+        return {
+            'sex': profile.get('sex', 'Male'),
+            'height_ft': int(profile.get('height_ft', 5)),
+            'height_in': float(profile.get('height_in', 9.0)),
+            'weight_lbs': float(profile.get('weight_lbs', 200.0)),
+            'age': int(profile.get('age', 38)),
+            'body_fat_pct': float(profile.get('body_fat_pct', 28.0)),
+            'daily_steps': int(profile.get('daily_steps', 4000)),
+            'step_pace': profile.get('step_pace', 'Average'),
+            'job_type': profile.get('job_type', 'Desk Job'),
+            'sedentary_hours': float(profile.get('sedentary_hours', 10.0)),
+            'workouts_per_week': float(profile.get('workouts_per_week', 2.0)),
+            'workout_duration': int(profile.get('workout_duration', 45)),
+            'workout_type': profile.get('workout_type', 'Heavy Lifting'),
+            'workout_intensity': profile.get('workout_intensity', 'Moderate'),
+            'daily_protein': int(profile.get('daily_protein', 100)),
+            'daily_carbs': int(profile.get('daily_carbs', 250)),
+            'daily_fat': int(profile.get('daily_fat', 80)),
+            'daily_calories': int(profile.get('daily_calories', 2200)),
+            'sleep_hours': float(profile.get('sleep_hours', 7.0)),
+            'sleep_quality': profile.get('sleep_quality', 'Fair')
+        }
+    # Return US average male defaults for guest users
+    return DEFAULT_USER_DATA
+
+
 def render_tdee_calculator_tab():
     """Render the TDEE Calculator tab"""
     st.header("TDEE Calculator")
     st.markdown("Calculate your Total Daily Energy Expenditure based on multiple factors")
     
-    # Sidebar for inputs
-    with st.sidebar:
-        st.title("Your Stats")
-        
-        # Basic Information
-        st.subheader("👤 Basic Info")
+    DEFAULTS = get_user_defaults()
+    
+    # Show indicator of which defaults are being used
+    if st.session_state.get('authenticated', False):
+        st.success(f"✅ Using **{st.session_state.user_profile.get('display_name', st.session_state.username)}'s** profile defaults")
+    else:
+        st.info("👤 Using **US Average Male** defaults — [Login to use your personalized values]")
+    
+    st.markdown("---")
+    
+    # Input Section - Grid Layout
+    st.subheader("📋 Your Information")
+    
+    # Row 1: Basic Info
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
         sex = st.selectbox("Sex", ["Male", "Female"], index=0 if DEFAULTS['sex'] == 'Male' else 1)
+    with col2:
         age = st.number_input("Age", 15, 100, DEFAULTS['age'])
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            height_ft = st.number_input("Height (ft)", 4, 7, DEFAULTS['height_ft'])
-        with col2:
-            height_in = st.number_input("Height (in)", 0.0, 11.9, DEFAULTS['height_in'], 0.1)
-        
+    with col3:
+        height_ft = st.number_input("Height (ft)", 4, 7, DEFAULTS['height_ft'])
+    with col4:
+        height_in = st.number_input("Height (in)", 0.0, 11.9, DEFAULTS['height_in'], 0.1)
+    
+    # Row 2: Weight & Body Composition
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
         weight = st.number_input("Weight (lbs)", 80.0, 500.0, DEFAULTS['weight_lbs'], 0.1)
+    with col2:
         body_fat_pct = st.number_input("Body Fat % (optional)", 0.0, 60.0, DEFAULTS['body_fat_pct'], 0.1,
                                        help="More accurate TDEE if provided")
-        
-        st.markdown("---")
-        
-        # Diet Information
-        st.subheader("🍽️ Diet")
+    with col3:
         daily_calories = st.number_input("Daily Calories", 0, 10000, DEFAULTS['daily_calories'],
                                         help="Average daily intake")
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            daily_protein = st.number_input("Protein (g)", 0, 500, DEFAULTS['daily_protein'])
-        with col2:
-            daily_carbs = st.number_input("Carbs (g)", 0, 1000, DEFAULTS['daily_carbs'])
-        with col3:
-            daily_fat = st.number_input("Fat (g)", 0, 300, DEFAULTS['daily_fat'])
-        
-        st.markdown("---")
-        
-        # Activity Information
-        st.subheader("🚶 Daily Activity")
+    with col4:
         daily_steps = st.number_input("Daily Steps", 0, 50000, DEFAULTS['daily_steps'], 100)
+    
+    st.markdown("---")
+    st.subheader("🍽️ Macronutrients")
+    
+    # Row 3: Macros
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        daily_protein = st.number_input("Protein (g)", 0, 500, DEFAULTS['daily_protein'])
+    with col2:
+        daily_carbs = st.number_input("Carbs (g)", 0, 1000, DEFAULTS['daily_carbs'])
+    with col3:
+        daily_fat = st.number_input("Fat (g)", 0, 300, DEFAULTS['daily_fat'])
+    
+    st.markdown("---")
+    st.subheader("🚶 Activity & Lifestyle")
+    
+    # Row 4: Activity
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
         step_pace = st.select_slider("Walking Pace", 
                                      options=["Slow", "Average", "Brisk", "Very Brisk"],
                                      value=DEFAULTS['step_pace'])
+    with col2:
         job_type = st.select_slider("Job Activity Level",
                                     options=["Desk Job", "Light Active", "Moderate Active", "Very Active"],
                                     value=DEFAULTS['job_type'])
+    with col3:
         sedentary_hours = st.slider("Hours Sitting/Day", 0.0, 24.0, DEFAULTS['sedentary_hours'], 0.5)
-        
-        st.markdown("---")
-        
-        # Sleep Information
-        st.subheader("😴 Sleep")
-        sleep_hours = st.slider("Average Sleep (hours/night)", 3.0, 12.0, DEFAULTS['sleep_hours'], 0.5,
-                               help="Optimal: 7-8 hours. <5 hrs significantly impacts metabolism")
+    with col4:
+        sleep_hours = st.slider("Sleep (hours/night)", 3.0, 12.0, DEFAULTS['sleep_hours'], 0.5,
+                               help="Optimal: 7-8 hours")
+    
+    # Row 5: Sleep & Workout
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
         sleep_quality = st.select_slider("Sleep Quality", 
                                         options=["Poor", "Fair", "Good", "Excellent"],
                                         value=DEFAULTS['sleep_quality'],
                                         help="Quality affects metabolic recovery")
-        
-        st.markdown("---")
-        
-        # Workout Information
-        st.subheader("🏋️ Workouts")
+    with col2:
         workouts_per_week = st.number_input("Workouts per Week", 0.0, 14.0, DEFAULTS['workouts_per_week'], 0.5)
-        workout_duration = st.number_input("Avg Duration (minutes)", 0, 300, DEFAULTS['workout_duration'])
+    with col3:
+        workout_duration = st.number_input("Workout Duration (min)", 0, 300, DEFAULTS['workout_duration'])
+    with col4:
         workout_type = st.selectbox("Workout Type", 
                                    ["Heavy Lifting", "HIIT", "Circuit Training", "Steady Cardio"],
                                    index=0)
-        workout_intensity = st.select_slider("Intensity", options=["Moderate", "High"],
+    
+    # Row 6: Workout Intensity
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        workout_intensity = st.select_slider("Workout Intensity", options=["Moderate", "High"],
                                             value=DEFAULTS['workout_intensity'])
-        
-        st.markdown("---")
-        
-        # Weight Trend Validation (optional)
-        st.subheader("📊 Weight Trend Validation")
+    
+    st.markdown("---")
+    st.subheader("📊 Weight Trend Validation (Optional)")
+    
+    # Row 7: Weight Trend
+    col1, col2, col3 = st.columns(3)
+    with col1:
         use_weight_trend = st.checkbox("Use weight trend data", value=False,
                                        help="For most accurate TDEE calculation")
-        
+    with col2:
         if use_weight_trend:
             weight_change = st.number_input("Weight Change (lbs)", -50.0, 50.0, 0.0, 0.1,
                                           help="Negative for loss, positive for gain")
+        else:
+            weight_change = 0.0
+    with col3:
+        if use_weight_trend:
             days_tracked = st.number_input("Days Tracked", 7, 365, 14,
                                          help="Minimum 7 days, 14+ recommended")
+        else:
+            days_tracked = 14
     
-    # Main content area - calculate and display (auto-calculates on any input change)
-    # Convert imperial to metric
-    weight_kg = lbs_to_kg(weight)
-    height_cm = feet_inches_to_cm(height_ft, height_in)
-    
-    # Map selections to internal values
-    pace_map = {"Slow": "slow", "Average": "average", "Brisk": "brisk", "Very Brisk": "very_brisk"}
-    job_map = {"Desk Job": "desk", "Light Active": "light_active", 
-              "Moderate Active": "moderate_active", "Very Active": "very_active"}
-    workout_map = {"Heavy Lifting": "heavy_lifting", "HIIT": "hiit", 
-                  "Circuit Training": "circuit_training", "Steady Cardio": "steady_cardio"}
-    intensity_map = {"High": "high", "Moderate": "moderate"}
-    quality_map = {"Poor": "poor", "Fair": "fair", "Good": "good", "Excellent": "excellent"}
-    
-    # Calculate TDEE
-    calc = TDEECalculator()
-    results = calc.calculate_tdee_formula_based(
-        weight_kg=weight_kg,
-        height_cm=height_cm,
-        age=age,
-        sex=sex.lower(),
-        body_fat_pct=body_fat_pct if body_fat_pct > 0 else None,
-        daily_steps=daily_steps,
-        step_pace=pace_map[step_pace],
-        job_type=job_map[job_type],
-        sedentary_hours=sedentary_hours,
-        workouts_per_week=workouts_per_week,
-        workout_type=workout_map[workout_type],
-        workout_duration_min=workout_duration,
-        workout_intensity=intensity_map[workout_intensity],
-        daily_protein_g=daily_protein,
-        daily_carbs_g=daily_carbs,
-        daily_fat_g=daily_fat,
-        daily_calories=daily_calories,
-        sleep_hours=sleep_hours,
-        sleep_quality=quality_map[sleep_quality]
-    )
-    
-    # Weight trend validation if provided
-    if use_weight_trend:
-        validation = calc.validate_with_weight_trend(
-            daily_calories=daily_calories,
-            weight_change_kg=lbs_to_kg(weight_change),
-            days_tracked=days_tracked
-        )
-    else:
-        validation = None
-    
-    # Display results
     st.markdown("---")
     
-    # Main TDEE number
-    tdee_to_display = validation['actual_tdee'] if validation else results['tdee']
-    tdee_source = "FROM WEIGHT DATA ✅" if validation else "FROM FORMULA ESTIMATE"
-    
-    st.markdown(f"""
-        <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 20px;">
-            <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE is <span style="color: white; text-decoration: none; font-size: 1.5em;">{tdee_to_display:,.0f}</span> calories per day.</h1>
-            <p style="color: #e0e0e0; margin: 5px 0 0 0; font-size: 0.9em;">{tdee_source}</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Component breakdown
-    st.subheader("Energy Expenditure Breakdown")
-    
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    with col1:
-        st.metric("BMR (Baseline)", f"{results['bmr']:.0f} cal",
-                 f"{results['breakdown_pct']['bmr']:.1f}%")
-        st.caption(f"Method: {results['bmr_method']}")
-    
+    # Calculate button
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        st.metric("TEF (Food Digestion)", f"{results['tef']:.0f} cal",
-                 f"{results['breakdown_pct']['tef']:.1f}%")
-        if 'tef_data' in results and 'protein_tef' in results['tef_data']:
-            st.caption(f"Protein: {results['tef_data']['protein_tef']:.0f} cal")
+        calculate_clicked = st.button("🧮 Calculate TDEE", type="primary", use_container_width=True)
     
-    with col3:
-        neat_total = results['neat_from_steps'] + results['additional_neat']
-        st.metric("NEAT (Daily Movement)", f"{neat_total:.0f} cal",
-                 f"{results['breakdown_pct']['neat']:.1f}%")
-        st.caption(f"Steps: {results['neat_from_steps']:.0f} cal")
-    
-    with col4:
-        st.metric("EAT (Exercise)", f"{results['eat_daily']:.0f} cal/day",
-                 f"{results['breakdown_pct']['eat']:.1f}%")
-    
-    with col5:
-        st.metric("EPOC (Afterburn)", f"{results['epoc_daily']:.0f} cal/day",
-                 f"{results['breakdown_pct']['epoc']:.1f}%")
-    
-    # Sleep Impact Display
-    if 'sleep_adjustment' in results:
-        sleep_adj = results['sleep_adjustment']
-        if sleep_adj['bmr_multiplier'] < 1.0 or sleep_adj['neat_multiplier'] < 1.0:
-            bmr_impact = (1.0 - sleep_adj['bmr_multiplier']) * results['bmr_base']
-            neat_impact = (1.0 - sleep_adj['neat_multiplier']) * (results['neat_from_steps'] / sleep_adj['neat_multiplier'] + results['additional_neat'] / sleep_adj['neat_multiplier'])
-            total_sleep_impact = bmr_impact + neat_impact
-            
-            st.markdown(f"""
-                <div style="background: linear-gradient(135deg, #E84625 0%, #FF6B4A 100%); padding: 15px; border-left: 5px solid #C4371F; border-radius: 5px; margin: 20px 0; color: white;">
-                    <strong>💤 Sleep Impact: -{total_sleep_impact:.0f} cal/day</strong><br>
-                    {sleep_adj['metabolic_note']}<br>
-                    <small>Sleeping {sleep_adj['sleep_hours']} hrs with {sleep_adj['sleep_quality']} quality</small>
-                </div>
-            """, unsafe_allow_html=True)
-        elif sleep_adj['sleep_hours'] >= 7 and sleep_adj['sleep_hours'] <= 8:
-            st.markdown(f"""
-                <div style="background-color: #d4edda; padding: 15px; border-left: 5px solid #28a745; border-radius: 5px; margin: 20px 0;">
-                    <strong>✅ Optimal Sleep</strong><br>
-                    {sleep_adj['metabolic_note']}
-                </div>
-            """, unsafe_allow_html=True)
-    
-    # Weight trend validation results
-    if validation:
-        st.markdown("---")
-        st.subheader("📊 Weight Trend Validation")
+    # Only show results if calculate button was clicked
+    if calculate_clicked or st.session_state.get('show_tdee_results', False):
+        # Set flag to keep showing results
+        st.session_state.show_tdee_results = True
         
-        col1, col2, col3 = st.columns(3)
+        st.markdown("---")
+        
+        # Calculate TDEE
+        # Convert imperial to metric
+        weight_kg = lbs_to_kg(weight)
+        height_cm = feet_inches_to_cm(height_ft, height_in)
+        
+        # Map selections to internal values
+        pace_map = {"Slow": "slow", "Average": "average", "Brisk": "brisk", "Very Brisk": "very_brisk"}
+        job_map = {"Desk Job": "desk", "Light Active": "light_active", 
+                  "Moderate Active": "moderate_active", "Very Active": "very_active"}
+        workout_map = {"Heavy Lifting": "heavy_lifting", "HIIT": "hiit", 
+                      "Circuit Training": "circuit_training", "Steady Cardio": "steady_cardio"}
+        intensity_map = {"High": "high", "Moderate": "moderate"}
+        quality_map = {"Poor": "poor", "Fair": "fair", "Good": "good", "Excellent": "excellent"}
+        
+        # Calculate TDEE
+        calc = TDEECalculator()
+        results = calc.calculate_tdee_formula_based(
+            weight_kg=weight_kg,
+            height_cm=height_cm,
+            age=age,
+            sex=sex.lower(),
+            body_fat_pct=body_fat_pct if body_fat_pct > 0 else None,
+            daily_steps=daily_steps,
+            step_pace=pace_map[step_pace],
+            job_type=job_map[job_type],
+            sedentary_hours=sedentary_hours,
+            workouts_per_week=workouts_per_week,
+            workout_type=workout_map[workout_type],
+            workout_duration_min=workout_duration,
+            workout_intensity=intensity_map[workout_intensity],
+            daily_protein_g=daily_protein,
+            daily_carbs_g=daily_carbs,
+            daily_fat_g=daily_fat,
+            daily_calories=daily_calories,
+            sleep_hours=sleep_hours,
+            sleep_quality=quality_map[sleep_quality]
+        )
+        
+        # Weight trend validation if provided
+        if use_weight_trend:
+            validation = calc.validate_with_weight_trend(
+                daily_calories=daily_calories,
+                weight_change_kg=lbs_to_kg(weight_change),
+                days_tracked=days_tracked
+            )
+        else:
+            validation = None
+        
+        # Display results
+        st.markdown("---")
+        
+        # Main TDEE number
+        tdee_to_display = validation['actual_tdee'] if validation else results['tdee']
+        tdee_source = "FROM WEIGHT DATA ✅" if validation else "FROM FORMULA ESTIMATE"
+        
+        st.markdown(f"""
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 20px;">
+                <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE is <span style="color: white; text-decoration: none; font-size: 1.5em;">{tdee_to_display:,.0f}</span> calories per day.</h1>
+                <p style="color: #e0e0e0; margin: 5px 0 0 0; font-size: 0.9em;">{tdee_source}</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Component breakdown
+        st.subheader("Energy Expenditure Breakdown")
+        
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
-            st.metric("Formula TDEE", f"{results['tdee']:.0f} cal")
+            st.metric("BMR (Baseline)", f"{results['bmr']:.0f} cal",
+                     f"{results['breakdown_pct']['bmr']:.1f}%")
+            st.caption(f"Method: {results['bmr_method']}")
         
         with col2:
-            st.metric("Actual TDEE", f"{validation['actual_tdee']:.0f} cal",
-                     help="Reverse-engineered from weight change")
+            st.metric("TEF (Food Digestion)", f"{results['tef']:.0f} cal",
+                     f"{results['breakdown_pct']['tef']:.1f}%")
+            if 'tef_data' in results and 'protein_tef' in results['tef_data']:
+                st.caption(f"Protein: {results['tef_data']['protein_tef']:.0f} cal")
         
         with col3:
-            diff_pct = ((validation['actual_tdee'] - results['tdee']) / results['tdee']) * 100
-            st.metric("Difference", f"{validation['actual_tdee'] - results['tdee']:+.0f} cal",
-                     f"{diff_pct:+.1f}%")
+            neat_total = results['neat_from_steps'] + results['additional_neat']
+            st.metric("NEAT (Daily Movement)", f"{neat_total:.0f} cal",
+                     f"{results['breakdown_pct']['neat']:.1f}%")
+            st.caption(f"Steps: {results['neat_from_steps']:.0f} cal")
         
-        if validation['metabolic_adaptation_detected']:
-            st.warning(f"⚠️ **Metabolic Adaptation Detected** - Your actual TDEE is {abs(diff_pct):.1f}% {('lower' if diff_pct < 0 else 'higher')} than predicted. This suggests metabolic adaptation from prolonged dieting/surplus.")
-        else:
-            st.success("✅ Formula matches your actual results well!")
-    
-    # Calorie targets
-    st.markdown("---")
-    st.subheader("🎯 Calorie Targets")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Aggressive Cut", f"{tdee_to_display - 750:.0f} cal",
-                 "-750 cal/day",
-                 help="~1.5 lbs/week loss")
-    
-    with col2:
-        st.metric("Moderate Cut", f"{tdee_to_display - 500:.0f} cal",
-                 "-500 cal/day",
-                 help="~1 lb/week loss")
-    
-    with col3:
-        st.metric("Lean Bulk", f"{tdee_to_display + 250:.0f} cal",
-                 "+250 cal/day",
-                 help="~0.5 lb/week gain")
-    
-    with col4:
-        st.metric("Standard Bulk", f"{tdee_to_display + 500:.0f} cal",
-                 "+500 cal/day",
-                 help="~1 lb/week gain")
+        with col4:
+            st.metric("EAT (Exercise)", f"{results['eat_daily']:.0f} cal/day",
+                     f"{results['breakdown_pct']['eat']:.1f}%")
+        
+        with col5:
+            st.metric("EPOC (Afterburn)", f"{results['epoc_daily']:.0f} cal/day",
+                     f"{results['breakdown_pct']['epoc']:.1f}%")
+        
+        # Sleep Impact Display
+        if 'sleep_adjustment' in results:
+            sleep_adj = results['sleep_adjustment']
+            if sleep_adj['bmr_multiplier'] < 1.0 or sleep_adj['neat_multiplier'] < 1.0:
+                bmr_impact = (1.0 - sleep_adj['bmr_multiplier']) * results['bmr_base']
+                neat_impact = (1.0 - sleep_adj['neat_multiplier']) * (results['neat_from_steps'] / sleep_adj['neat_multiplier'] + results['additional_neat'] / sleep_adj['neat_multiplier'])
+                total_sleep_impact = bmr_impact + neat_impact
+                
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #E84625 0%, #FF6B4A 100%); padding: 15px; border-left: 5px solid #C4371F; border-radius: 5px; margin: 20px 0; color: white;">
+                        <strong>💤 Sleep Impact: -{total_sleep_impact:.0f} cal/day</strong><br>
+                        {sleep_adj['metabolic_note']}<br>
+                        <small>Sleeping {sleep_adj['sleep_hours']} hrs with {sleep_adj['sleep_quality']} quality</small>
+                    </div>
+                """, unsafe_allow_html=True)
+            elif sleep_adj['sleep_hours'] >= 7 and sleep_adj['sleep_hours'] <= 8:
+                st.markdown(f"""
+                    <div style="background-color: #d4edda; padding: 15px; border-left: 5px solid #28a745; border-radius: 5px; margin: 20px 0;">
+                        <strong>✅ Optimal Sleep</strong><br>
+                        {sleep_adj['metabolic_note']}
+                    </div>
+                """, unsafe_allow_html=True)
+        
+        # Weight trend validation results
+        if validation:
+            st.markdown("---")
+            st.subheader("📊 Weight Trend Validation")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Formula TDEE", f"{results['tdee']:.0f} cal")
+            
+            with col2:
+                st.metric("Actual TDEE", f"{validation['actual_tdee']:.0f} cal",
+                         help="Reverse-engineered from weight change")
+            
+            with col3:
+                diff_pct = ((validation['actual_tdee'] - results['tdee']) / results['tdee']) * 100
+                st.metric("Difference", f"{validation['actual_tdee'] - results['tdee']:+.0f} cal",
+                         f"{diff_pct:+.1f}%")
+            
+            if validation['metabolic_adaptation_detected']:
+                st.warning(f"⚠️ **Metabolic Adaptation Detected** - Your actual TDEE is {abs(diff_pct):.1f}% {('lower' if diff_pct < 0 else 'higher')} than predicted. This suggests metabolic adaptation from prolonged dieting/surplus.")
+            else:
+                st.success("✅ Formula matches your actual results well!")
+        
+        # Calorie targets
+        st.markdown("---")
+        st.subheader("🎯 Calorie Targets")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Aggressive Cut", f"{tdee_to_display - 750:.0f} cal",
+                     "-750 cal/day",
+                     help="~1.5 lbs/week loss")
+        
+        with col2:
+            st.metric("Moderate Cut", f"{tdee_to_display - 500:.0f} cal",
+                     "-500 cal/day",
+                     help="~1 lb/week loss")
+        
+        with col3:
+            st.metric("Lean Bulk", f"{tdee_to_display + 250:.0f} cal",
+                     "+250 cal/day",
+                     help="~0.5 lb/week gain")
+        
+        with col4:
+            st.metric("Standard Bulk", f"{tdee_to_display + 500:.0f} cal",
+                     "+500 cal/day",
+                     help="~1 lb/week gain")
 
 
 def render_daily_tracker_tab(selected_user: str):
     """Render the Daily Tracker tab"""
     st.header("📝 Daily Tracker")
     st.markdown("Track your daily metrics and see weekly averages")
+    
+    # Show info banner if not logged in
+    if not st.session_state.get('authenticated', False):
+        st.info("ℹ️ **Guest Mode**: You can view the tracker, but entries can only be saved when logged in. Click **Login** above to create an account.")
     
     # Initialize tracker with selected user
     tracker = DailyTracker(user=selected_user)
@@ -376,6 +453,9 @@ def render_daily_tracker_tab(selected_user: str):
     
     # Input form with defaults
     st.subheader("Today's Metrics")
+    
+    # Get user defaults
+    DEFAULTS = get_user_defaults()
     
     # Weight & Intake Section (Horizontal)
     st.markdown("**⚖️ Weight & Intake**")
@@ -478,28 +558,35 @@ def render_daily_tracker_tab(selected_user: str):
     
     # Save button
     if st.button("💾 Save Entry", type="primary"):
-        entry_data = {
-            'weight': weight,
-            'calories': calories,
-            'protein': protein,
-            'carbs': carbs,
-            'fat': fat,
-            'steps': steps,
-            'sleep_hours': sleep_hours,
-            'sleep_quality': sleep_quality,
-            'water_oz': water_intake,
-            'workout_done': workout_done,
-            'workout_type': workout_type,
-            'workout_duration': workout_duration,
-            'rest_time': rest_time,
-            'training_style': training_style,
-            'energy_level': energy_level,
-            'notes': notes
-        }
-        
-        tracker.add_entry(date_str, entry_data)
-        st.success(f"✅ Entry saved for {date_str}!")
-        st.rerun()
+        # Check if user is logged in
+        if not st.session_state.get('authenticated', False):
+            st.warning("⚠️ Please log in to save entries to your account")
+            if st.button("🔐 Login Now", type="secondary", key="login_prompt_tracker"):
+                st.session_state.show_login_dialog = True
+                st.rerun()
+        else:
+            entry_data = {
+                'weight': weight,
+                'calories': calories,
+                'protein': protein,
+                'carbs': carbs,
+                'fat': fat,
+                'steps': steps,
+                'sleep_hours': sleep_hours,
+                'sleep_quality': sleep_quality,
+                'water_oz': water_intake,
+                'workout_done': workout_done,
+                'workout_type': workout_type,
+                'workout_duration': workout_duration,
+                'rest_time': rest_time,
+                'training_style': training_style,
+                'energy_level': energy_level,
+                'notes': notes
+            }
+            
+            tracker.add_entry(date_str, entry_data)
+            st.success(f"✅ Entry saved for {date_str}!")
+            st.rerun()
     
     # Weekly Averages
     st.markdown("---")
@@ -777,6 +864,258 @@ def render_daily_tracker_tab(selected_user: str):
         st.info("👉 No data yet for this week. Start tracking to see weekly averages!")
 
 
+@st.dialog("🔐 Login / Create Account")
+def render_login_dialog():
+    """Render login dialog"""
+    
+    # Show create account form if flag is set
+    if st.session_state.get('show_create_account', False):
+        st.markdown("### Create New Account")
+        
+        with st.form("create_account_form"):
+            new_username = st.text_input("Username", key="new_account_username")
+            new_password = st.text_input("Password", type="password", key="new_account_password")
+            confirm_password = st.text_input("Confirm Password", type="password", key="confirm_password")
+            
+            st.markdown("---")
+            st.markdown("**Your Default Profile Settings**")
+            
+            col_a, col_b = st.columns(2)
+            with col_a:
+                sex = st.selectbox("Sex", ["Male", "Female"])
+                age = st.number_input("Age", 15, 100, 26)
+                height_ft = st.number_input("Height (ft)", 4, 7, 5)
+                height_in = st.number_input("Height (in)", 0.0, 11.9, 9.0, 0.1)
+                weight_lbs = st.number_input("Weight (lbs)", 80.0, 500.0, 200.0, 0.1)
+            
+            with col_b:
+                body_fat_pct = st.number_input("Body Fat %", 0.0, 60.0, 28.0, 0.1)
+                daily_steps = st.number_input("Daily Steps", 0, 50000, 4000, 100)
+                daily_calories = st.number_input("Daily Calories", 0, 10000, 2200)
+                sleep_hours = st.number_input("Sleep (hrs)", 3.0, 12.0, 7.0, 0.5)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                submit_btn = st.form_submit_button("Create Account", type="primary", use_container_width=True)
+            with col2:
+                cancel_btn = st.form_submit_button("Back to Login", use_container_width=True)
+            
+            if submit_btn:
+                if not new_username or not new_password:
+                    st.error("Please fill in all required fields")
+                elif new_password != confirm_password:
+                    st.error("Passwords do not match")
+                elif len(new_password) < 6:
+                    st.error("Password must be at least 6 characters")
+                else:
+                    # Create user
+                    auth = AuthManager()
+                    user_data = {
+                        'display_name': new_username,
+                        'sex': sex,
+                        'height_ft': height_ft,
+                        'height_in': height_in,
+                        'weight_lbs': weight_lbs,
+                        'age': age,
+                        'body_fat_pct': body_fat_pct,
+                        'daily_steps': daily_steps,
+                        'daily_calories': daily_calories,
+                        'sleep_hours': sleep_hours,
+                        'step_pace': 'Average',
+                        'job_type': 'Desk Job',
+                        'sedentary_hours': 10,
+                        'workouts_per_week': 2,
+                        'workout_duration': 45,
+                        'workout_type': 'Heavy Lifting',
+                        'workout_intensity': 'Moderate',
+                        'daily_protein': 100,
+                        'daily_carbs': 250,
+                        'daily_fat': 80,
+                        'sleep_quality': 'Fair'
+                    }
+                    
+                    if auth.create_user(new_username, new_password, user_data):
+                        st.success("Account created successfully! Please log in.")
+                        st.session_state.show_create_account = False
+                        st.rerun()
+                    else:
+                        st.error("Username already exists or creation failed")
+            
+            if cancel_btn:
+                st.session_state.show_create_account = False
+                st.rerun()
+    
+    else:
+        # Login form
+        st.markdown("### Login to Your Account")
+        
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                login_btn = st.form_submit_button("Login", type="primary", use_container_width=True)
+            with col2:
+                create_btn = st.form_submit_button("Create Account", use_container_width=True)
+            
+            if login_btn:
+                if username and password:
+                    auth = AuthManager()
+                    user_data = auth.authenticate(username, password)
+                    if user_data:
+                        st.session_state.authenticated = True
+                        st.session_state.username = username
+                        st.session_state.user_profile = user_data
+                        st.success("Login successful!")
+                        st.rerun()
+                    else:
+                        st.error("Invalid username or password")
+                else:
+                    st.error("Please enter both username and password")
+            
+            if create_btn:
+                st.session_state.show_create_account = True
+                st.rerun()
+
+
+def render_my_profile_tab():
+    """Render My Profile tab for editing user settings"""
+    st.header("👤 My Profile")
+    
+    if not st.session_state.get('authenticated', False):
+        st.warning("⚠️ Please log in to view and edit your profile")
+        if st.button("🔐 Login", type="primary"):
+            st.session_state.show_login_dialog = True
+            st.rerun()
+        return
+    
+    if 'user_profile' not in st.session_state:
+        st.error("No profile data found")
+        return
+    
+    profile = st.session_state.user_profile
+    
+    st.markdown(f"### Welcome, {profile.get('display_name', st.session_state.username)}!")
+    
+    # Change Password Section
+    with st.expander("🔒 Change Password"):
+        with st.form("change_password_form"):
+            old_password = st.text_input("Current Password", type="password")
+            new_password = st.text_input("New Password", type="password")
+            confirm_new = st.text_input("Confirm New Password", type="password")
+            
+            if st.form_submit_button("Update Password", type="primary"):
+                if not old_password or not new_password:
+                    st.error("Please fill in all fields")
+                elif new_password != confirm_new:
+                    st.error("New passwords do not match")
+                elif len(new_password) < 6:
+                    st.error("Password must be at least 6 characters")
+                else:
+                    auth = AuthManager()
+                    if auth.change_password(st.session_state.username, old_password, new_password):
+                        st.success("Password updated successfully!")
+                    else:
+                        st.error("Current password is incorrect")
+    
+    st.markdown("---")
+    
+    # Profile Settings
+    st.subheader("Default Profile Settings")
+    st.markdown("These values will be used as defaults in the TDEE Calculator")
+    
+    with st.form("profile_form"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Basic Info**")
+            display_name = st.text_input("Display Name", value=profile.get('display_name', ''))
+            sex = st.selectbox("Sex", ["Male", "Female"], index=0 if profile.get('sex') == 'Male' else 1)
+            age = st.number_input("Age", 15, 100, int(profile.get('age', 26)))
+            
+            height_ft = st.number_input("Height (ft)", 4, 7, int(profile.get('height_ft', 5)))
+            height_in = st.number_input("Height (in)", 0.0, 11.9, float(profile.get('height_in', 11.0)), 0.1)
+            
+            weight_lbs = st.number_input("Weight (lbs)", 80.0, 500.0, float(profile.get('weight_lbs', 180.0)), 0.1)
+            body_fat_pct = st.number_input("Body Fat %", 0.0, 60.0, float(profile.get('body_fat_pct', 19.0)), 0.1)
+            
+            st.markdown("**Activity**")
+            daily_steps = st.number_input("Daily Steps", 0, 50000, int(profile.get('daily_steps', 4500)), 100)
+            step_pace = st.select_slider("Walking Pace", 
+                                        options=["Slow", "Average", "Brisk", "Very Brisk"],
+                                        value=profile.get('step_pace', 'Average'))
+            job_type = st.select_slider("Job Activity Level",
+                                        options=["Desk Job", "Light Active", "Moderate Active", "Very Active"],
+                                        value=profile.get('job_type', 'Desk Job'))
+            sedentary_hours = st.slider("Hours Sitting/Day", 0.0, 24.0, float(profile.get('sedentary_hours', 10.0)), 0.5)
+        
+        with col2:
+            st.markdown("**Diet**")
+            daily_calories = st.number_input("Daily Calories", 0, 10000, int(profile.get('daily_calories', 1840)))
+            daily_protein = st.number_input("Protein (g)", 0, 500, int(profile.get('daily_protein', 172)))
+            daily_carbs = st.number_input("Carbs (g)", 0, 1000, int(profile.get('daily_carbs', 196)))
+            daily_fat = st.number_input("Fat (g)", 0, 300, int(profile.get('daily_fat', 41)))
+            
+            st.markdown("**Sleep**")
+            sleep_hours = st.slider("Sleep (hours/night)", 3.0, 12.0, float(profile.get('sleep_hours', 9.0)), 0.5)
+            sleep_quality = st.select_slider("Sleep Quality",
+                                            options=["Poor", "Fair", "Good", "Excellent"],
+                                            value=profile.get('sleep_quality', 'Good'))
+            
+            st.markdown("**Workouts**")
+            workouts_per_week = st.number_input("Workouts per Week", 0.0, 14.0, float(profile.get('workouts_per_week', 3.0)), 0.5)
+            workout_duration = st.number_input("Avg Duration (minutes)", 0, 300, int(profile.get('workout_duration', 77)))
+            workout_type = st.selectbox("Primary Workout Type",
+                                       ["Cardio", "Light Lifting", "Heavy Lifting", "CrossFit", "Sports"],
+                                       index=["Cardio", "Light Lifting", "Heavy Lifting", "CrossFit", "Sports"].index(profile.get('workout_type', 'Heavy Lifting')))
+            workout_intensity = st.select_slider("Workout Intensity",
+                                                options=["Low", "Moderate", "High", "Very High"],
+                                                value=profile.get('workout_intensity', 'High'))
+        
+        if st.form_submit_button("💾 Save Profile", type="primary", use_container_width=True):
+            updated_data = {
+                'display_name': display_name,
+                'sex': sex,
+                'age': age,
+                'height_ft': height_ft,
+                'height_in': height_in,
+                'weight_lbs': weight_lbs,
+                'body_fat_pct': body_fat_pct,
+                'daily_steps': daily_steps,
+                'step_pace': step_pace,
+                'job_type': job_type,
+                'sedentary_hours': sedentary_hours,
+                'workouts_per_week': workouts_per_week,
+                'workout_duration': workout_duration,
+                'workout_type': workout_type,
+                'workout_intensity': workout_intensity,
+                'daily_protein': daily_protein,
+                'daily_carbs': daily_carbs,
+                'daily_fat': daily_fat,
+                'daily_calories': daily_calories,
+                'sleep_hours': sleep_hours,
+                'sleep_quality': sleep_quality
+            }
+            
+            auth = AuthManager()
+            if auth.update_user_data(st.session_state.username, updated_data):
+                # Update session state
+                st.session_state.user_profile.update(updated_data)
+                st.success("✅ Profile updated successfully!")
+            else:
+                st.error("❌ Failed to update profile")
+    
+    st.markdown("---")
+    
+    # Logout button
+    if st.button("🚪 Logout", type="secondary"):
+        st.session_state.authenticated = False
+        st.session_state.username = None
+        st.session_state.user_profile = None
+        st.rerun()
+
+
 def main():
     st.set_page_config(
         page_title="TDEE & Daily Tracker",
@@ -785,43 +1124,71 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Get list of users from session state or default
-    if 'users' not in st.session_state:
-        st.session_state.users = ["Garrison", "Gary"]
+    # Initialize session state
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    if 'show_create_account' not in st.session_state:
+        st.session_state.show_create_account = False
+    if 'show_login_dialog' not in st.session_state:
+        st.session_state.show_login_dialog = False
     
-    # Header with user selector on the same row
-    col_title, col_spacer, col_user = st.columns([3, 1, 1])
+    # Show login dialog if requested
+    if st.session_state.show_login_dialog:
+        render_login_dialog()
+        st.session_state.show_login_dialog = False
+    
+    # Main app header with login/logout button
+    col_title, col_spacer, col_login = st.columns([3, 1, 1])
     
     with col_title:
         st.title("💪 TDEE Calculator & Daily Tracker")
-        st.markdown("Your personalized fitness companion!")
+        if st.session_state.authenticated:
+            st.markdown(f"Welcome back, **{st.session_state.user_profile.get('display_name', st.session_state.username)}**!")
+        else:
+            st.markdown("Using default values (Average American Man)")
     
-    with col_user:
-        selected_user = st.selectbox(
-            "👤 Select User",
-            st.session_state.users,
-            key="user_selector"
-        )
-        with st.expander("➕ Add User"):
-            new_user = st.text_input("New username", key="new_user_input")
-            if st.button("Add", key="add_user_btn"):
-                if new_user and new_user not in st.session_state.users:
-                    st.session_state.users.append(new_user)
-                    st.success(f"Added {new_user}!")
-                    st.rerun()
+    with col_login:
+        if st.session_state.authenticated:
+            # Show logout button if logged in
+            if st.button("🚪 Logout", type="secondary", use_container_width=True):
+                st.session_state.authenticated = False
+                st.session_state.username = None
+                st.session_state.user_profile = None
+                st.rerun()
+        else:
+            # Show login button if not logged in
+            if st.button("🔐 Login", type="primary", use_container_width=True):
+                st.session_state.show_login_dialog = True
+                st.rerun()
     
     st.markdown("---")
     
+    # Track current tab with session state
+    if 'current_tab' not in st.session_state:
+        st.session_state.current_tab = 0
+    
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "📖 Read Me!", "⚡ Quick Reference", "🔖 Version"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "📊 TDEE Calculator", 
+        "📝 Daily Tracker", 
+        "👤 My Profile",
+        "📖 Read Me!", 
+        "⚡ Quick Reference", 
+        "🔖 Version"
+    ])
     
     with tab1:
         render_tdee_calculator_tab()
     
     with tab2:
-        render_daily_tracker_tab(selected_user)
+        # Use username as the user identifier for daily tracker (or "guest" if not logged in)
+        user_id = st.session_state.get('username', 'guest')
+        render_daily_tracker_tab(user_id)
     
     with tab3:
+        render_my_profile_tab()
+    
+    with tab4:
         # Display the README content
         try:
             with open('readme.md', 'r', encoding='utf-8') as f:
@@ -832,7 +1199,7 @@ def main():
         except Exception as e:
             st.error(f"Error loading README: {str(e)}")
     
-    with tab4:
+    with tab5:
         # Display the Quick Reference Guide
         try:
             with open('QUICK_REFERENCE.md', 'r', encoding='utf-8') as f:
@@ -843,7 +1210,7 @@ def main():
         except Exception as e:
             st.error(f"Error loading Quick Reference: {str(e)}")
     
-    with tab5:
+    with tab6:
         # Display the Version history
         try:
             with open('VERSION.md', 'r', encoding='utf-8') as f:
