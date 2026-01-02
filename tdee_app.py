@@ -328,21 +328,22 @@ def render_daily_tracker_tab():
     
     # User selector at the top
     st.markdown("---")
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        # Get list of users from session state or default
-        if 'users' not in st.session_state:
-            st.session_state.users = ["Garrison", "Gary"]
-        
+    
+    # Get list of users from session state or default
+    if 'users' not in st.session_state:
+        st.session_state.users = ["Garrison", "Gary"]
+    
+    col_user1, col_user2 = st.columns([1, 2])
+    with col_user1:
         selected_user = st.selectbox(
             "👤 Select User",
             st.session_state.users,
             key="user_selector"
         )
     
-    with col2:
-        # Add new user
-        st.markdown("<br><div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
+    # Add new user button directly below
+    col_add1, col_add2 = st.columns([1, 3])
+    with col_add1:
         with st.expander("➕ Add User"):
             new_user = st.text_input("New username", key="new_user_input")
             if st.button("Add", key="add_user_btn"):
@@ -356,19 +357,24 @@ def render_daily_tracker_tab():
     # Initialize tracker with selected user
     tracker = DailyTracker(user=selected_user)
     
+    # Initialize session state for entry date if not exists
+    if 'entry_date' not in st.session_state:
+        st.session_state.entry_date = datetime.now().date()
+    
     # Date selector
-    col1, col2, col3 = st.columns([3, 1, 1])
-    with col1:
-        entry_date = st.date_input("Entry Date", datetime.now().date())
-    with col2:
-        st.markdown("<br><div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
+    col_date1, col_date2 = st.columns([1, 2])
+    with col_date1:
+        entry_date = st.date_input("Entry Date", st.session_state.entry_date)
+    
+    # Date buttons directly below
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 3])
+    with col_btn1:
         if st.button("Yesterday", type="secondary"):
-            entry_date = (datetime.now() - timedelta(days=1)).date()
+            st.session_state.entry_date = (datetime.now() - timedelta(days=1)).date()
             st.rerun()
-    with col3:
-        st.markdown("<br><div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
+    with col_btn2:
         if st.button("Today", type="primary"):
-            entry_date = datetime.now().date()
+            st.session_state.entry_date = datetime.now().date()
             st.rerun()
     
     date_str = entry_date.strftime('%Y-%m-%d')
