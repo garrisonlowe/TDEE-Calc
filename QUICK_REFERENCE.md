@@ -2,9 +2,9 @@
 
 ## 🏃 30-Second Daily Workflow
 
-1. **Open app** → Navigate to "📝 Daily Tracker" tab
-2. **Select your user** from the dropdown (Garrison, Gary, or your added user)
-3. **Click date picker** or use "Today" button
+1. **Open app** → Select your user from dropdown at the top (Garrison, Gary, or your added user)
+2. **Navigate to "📝 Daily Tracker" tab**
+3. **Click date picker** or use "Yesterday"/"Today" buttons
 4. **Update fields** that changed from defaults
 5. **Click "💾 Save Entry"**
 6. **Done!** ✅
@@ -15,8 +15,8 @@
 
 The app supports multiple users with completely separate data:
 
-1. **Switch Users**: Use dropdown at top of Daily Tracker tab
-2. **Add New User**: Click "Add New User" expander
+1. **Switch Users**: Use dropdown at the top of the app (global, works across all tabs)
+2. **Add New User**: Click "➕ Add User" expander next to user selector
 3. **Each User Gets**:
    - Separate Google Sheets worksheet
    - Independent charts and analytics
@@ -117,7 +117,7 @@ All charts support **pan/scroll** (zoom disabled for clean viewing):
 **Weigh Daily** → Weekly averages smooth out water fluctuations  
 **Track Everything** → Even "off" days matter for trends  
 **Use Cloud Sync** → Data persists forever, accessible anywhere  
-**Select Correct User** → Double-check dropdown before saving  
+**Select Correct User** → Check user dropdown at top before entering data  
 **Review Charts Weekly** → Patterns > individual days  
 **Be Consistent** → Same time, same conditions (morning weigh-ins)  
 **Trust the Process** → 2+ weeks of data = accurate TDEE

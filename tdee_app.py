@@ -210,7 +210,7 @@ def render_tdee_calculator_tab():
     
     st.markdown(f"""
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 20px;">
-            <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE is <span style="color: #F0DEDA; text-decoration: none; font-size: 1.3em;">{tdee_to_display:.0f}</span> calories per day</h1>
+            <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE is <span style="color: white; text-decoration: none; font-size: 1.5em;">{tdee_to_display:,.0f}</span> calories per day.</h1>
             <p style="color: #e0e0e0; margin: 5px 0 0 0; font-size: 0.9em;">{tdee_source}</p>
         </div>
     """, unsafe_allow_html=True)
@@ -321,36 +321,9 @@ def render_tdee_calculator_tab():
                  help="~1 lb/week gain")
 
 
-def render_daily_tracker_tab():
+def render_daily_tracker_tab(selected_user: str):
     """Render the Daily Tracker tab"""
     st.header("📝 Daily Tracker")
-    
-    # User selector at the top
-    st.markdown("---")
-    
-    # Get list of users from session state or default
-    if 'users' not in st.session_state:
-        st.session_state.users = ["Garrison", "Gary"]
-    
-    col_user1, col_user2 = st.columns([1, 2])
-    with col_user1:
-        selected_user = st.selectbox(
-            "👤 Select User",
-            st.session_state.users,
-            key="user_selector"
-        )
-    
-    # Add new user button directly below
-    col_add1, col_add2 = st.columns([1, 3])
-    with col_add1:
-        with st.expander("➕ Add User"):
-            new_user = st.text_input("New username", key="new_user_input")
-            if st.button("Add", key="add_user_btn"):
-                if new_user and new_user not in st.session_state.users:
-                    st.session_state.users.append(new_user)
-                    st.success(f"Added {new_user}!")
-                    st.rerun()
-    
     st.markdown("Track your daily metrics and see weekly averages")
     
     # Initialize tracker with selected user
@@ -366,7 +339,7 @@ def render_daily_tracker_tab():
         entry_date = st.date_input("Entry Date", st.session_state.entry_date)
     
     # Date buttons directly below
-    col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 3])
+    col_btn1, col_btn2, col_btn3 = st.columns([0.5, 0.5, 3])
     with col_btn1:
         if st.button("Yesterday", type="secondary"):
             st.session_state.entry_date = (datetime.now() - timedelta(days=1)).date()
@@ -792,6 +765,33 @@ def main():
     st.title("💪 TDEE Calculator & Daily Tracker")
     st.markdown("Your personalized fitness companion")
     
+    # Global User Selector
+    st.markdown("---")
+    st.subheader("👤 User Selection")
+    
+    # Get list of users from session state or default
+    if 'users' not in st.session_state:
+        st.session_state.users = ["Garrison", "Gary"]
+    
+    col_user1, col_user2, col_user3 = st.columns([1, 1, 2])
+    with col_user1:
+        selected_user = st.selectbox(
+            "Select User",
+            st.session_state.users,
+            key="user_selector"
+        )
+    
+    with col_user2:
+        with st.expander("➕ Add User"):
+            new_user = st.text_input("New username", key="new_user_input")
+            if st.button("Add", key="add_user_btn"):
+                if new_user and new_user not in st.session_state.users:
+                    st.session_state.users.append(new_user)
+                    st.success(f"Added {new_user}!")
+                    st.rerun()
+    
+    st.markdown("---")
+    
     # Create tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "⚡ Quick Reference", "📖 Read Me!", "🔖 Version"])
     
@@ -799,7 +799,7 @@ def main():
         render_tdee_calculator_tab()
     
     with tab2:
-        render_daily_tracker_tab()
+        render_daily_tracker_tab(selected_user)
     
     with tab3:
         # Display the Quick Reference Guide
