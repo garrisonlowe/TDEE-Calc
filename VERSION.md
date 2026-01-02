@@ -5,16 +5,27 @@
 
 ### New Features
 
-#### Meals Tracker Tab
-- **Calorie Target Selection**: Choose your goal (Aggressive Fat Loss, Moderate Fat Loss, Maintenance, Lean Bulk, Standard Bulk)
-- **Daily Calorie Targets**: Automatic calculation based on TDEE and goal type
-- **Meal Logging**: Track individual meals with calories and macros (protein, carbs, fat)
-- **Progress Visualization**: Real-time progress bar showing calories consumed vs target
-- **Smart Status Messages**: Get feedback on whether you're on target, over, or under
-- **Macro Breakdown**: View total protein, carbs, and fat for each day
-- **Date Navigation**: Review and log meals for any date with Yesterday/Today buttons
-- **Meal Management**: Delete individual meals with one click
-- **Google Sheets Integration**: All meal data persists across sessions and devices
+#### Meal Plan Tab
+- **Meal Library System**: Create a library of meals you eat every day (no date tracking)
+- **Interactive Goal Selection**: Dynamic dropdown to switch between diet goals instantly
+  - Aggressive Fat Loss (-750 cal)
+  - Moderate Fat Loss (-500 cal)
+  - Maintenance (0 cal)
+  - Lean Bulk (+250 cal)
+  - Standard Bulk (+350 cal)
+- **TDEE Auto-Sync**: Automatically pulls TDEE from calculator results
+- **Add Meals**: Log meals with name, calories, and macros (protein, carbs, fat)
+- **Edit Meals**: Expandable forms to edit any meal with save/delete options
+- **Visual Analytics**: 
+  - Donut chart showing calories by macro (Protein, Carbs, Fat)
+  - Bar chart showing calories per meal
+  - Charts use purple gradient theme matching TDEE calculator
+  - Bold white text for readability
+- **Smart Layout**: 3-column design with donut chart, macro totals, and bar chart
+- **Progress Tracking**: Custom-colored progress bar (#0be881) showing daily intake vs target
+- **Smart Caching**: Prevents API rate limiting with session state caching
+- **Input Auto-Clear**: Form fields reset after successfully adding a meal
+- **Google Sheets Integration**: All meals persist across sessions and devices
 
 ---
 

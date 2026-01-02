@@ -79,9 +79,9 @@ class MealsTracker:
         except gspread.WorksheetNotFound:
             # Create new worksheet for this user's meals
             worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows=1000, cols=10)
-            # Add headers
-            headers = ['date', 'time', 'meal_name', 'calories', 'protein', 'carbs', 'fat']
-            worksheet.update('A1:G1', [headers])
+            # Add headers (removed date and time - just meal library)
+            headers = ['meal_name', 'calories', 'protein', 'carbs', 'fat']
+            worksheet.update('A1:E1', [headers])
         
         return worksheet
     
@@ -97,13 +97,11 @@ class MealsTracker:
         with open(self.data_file, 'w') as f:
             json.dump(data, f, indent=2)
     
-    def add_meal(self, date: str, meal_data: Dict):
-        """Add a meal entry for a specific date"""
+    def add_meal(self, meal_data: Dict):
+        """Add a meal entry to the meal library"""
         if self.use_sheets:
             # Add to Google Sheets
             row = [
-                date,
-                meal_data.get('time', ''),
                 meal_data.get('name', ''),
                 meal_data.get('calories', 0),
                 meal_data.get('protein', 0),
@@ -113,56 +111,61 @@ class MealsTracker:
             self.worksheet.append_row(row)
         else:
             # Add to JSON
-            if date not in self.data:
-                self.data[date] = []
-            self.data[date].append(meal_data)
+            if 'meals' not in self.data:
+                self.data['meals'] = []
+            self.data['meals'].append(meal_data)
             self.save_data(self.data)
     
-    def get_meals_for_date(self, date: str) -> List[Dict]:
-        """Get all meals for a specific date"""
+    def get_all_meals(self) -> List[Dict]:
+        """Get all meals in the library"""
         if self.use_sheets:
             # Fetch from Google Sheets
             all_values = self.worksheet.get_all_values()
             meals = []
             
             for row in all_values[1:]:  # Skip header
-                if row and row[0] == date:
+                if row and row[0]:  # If meal name exists
                     meal = {
-                        'time': row[1] if len(row) > 1 else '',
-                        'name': row[2] if len(row) > 2 else '',
-                        'calories': int(row[3]) if len(row) > 3 and row[3] else 0,
-                        'protein': int(row[4]) if len(row) > 4 and row[4] else 0,
-                        'carbs': int(row[5]) if len(row) > 5 and row[5] else 0,
-                        'fat': int(row[6]) if len(row) > 6 and row[6] else 0
+                        'name': row[0] if len(row) > 0 else '',
+                        'calories': int(row[1]) if len(row) > 1 and row[1] else 0,
+                        'protein': int(row[2]) if len(row) > 2 and row[2] else 0,
+                        'carbs': int(row[3]) if len(row) > 3 and row[3] else 0,
+                        'fat': int(row[4]) if len(row) > 4 and row[4] else 0
                     }
                     meals.append(meal)
             
             return meals
         else:
             # Get from JSON
-            return self.data.get(date, [])
+            return self.data.get('meals', [])
     
-    def delete_meal(self, date: str, meal_index: int):
-        """Delete a meal at the specified index for a date"""
+    def delete_meal(self, meal_index: int):
+        """Delete a meal at the specified index"""
         if self.use_sheets:
-            # Find and delete from Google Sheets
-            all_values = self.worksheet.get_all_values()
-            date_meals_count = 0
-            row_to_delete = None
-            
-            for idx, row in enumerate(all_values[1:], start=2):  # Start from row 2 (skip header)
-                if row and row[0] == date:
-                    if date_meals_count == meal_index:
-                        row_to_delete = idx
-                        break
-                    date_meals_count += 1
-            
-            if row_to_delete:
-                self.worksheet.delete_rows(row_to_delete)
+            # Delete from Google Sheets (row index + 2 to account for header and 0-based indexing)
+            row_to_delete = meal_index + 2
+            self.worksheet.delete_rows(row_to_delete)
         else:
             # Delete from JSON
-            if date in self.data and meal_index < len(self.data[date]):
-                self.data[date].pop(meal_index)
-                if not self.data[date]:
-                    del self.data[date]
+            if 'meals' in self.data and meal_index < len(self.data['meals']):
+                self.data['meals'].pop(meal_index)
+                self.save_data(self.data)
+    
+    def update_meal(self, meal_index: int, meal_data: Dict):
+        """Update a meal at the specified index"""
+        if self.use_sheets:
+            # Update in Google Sheets (row index + 2 to account for header and 0-based indexing)
+            row_to_update = meal_index + 2
+            row = [
+                meal_data.get('name', ''),
+                meal_data.get('calories', 0),
+                meal_data.get('protein', 0),
+                meal_data.get('carbs', 0),
+                meal_data.get('fat', 0)
+            ]
+            self.worksheet.update(f'A{row_to_update}:E{row_to_update}', [row])
+        else:
+            # Update in JSON
+            if 'meals' in self.data and meal_index < len(self.data['meals']):
+                self.data['meals'][meal_index] = meal_data
                 self.save_data(self.data)

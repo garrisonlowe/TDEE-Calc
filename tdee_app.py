@@ -264,6 +264,9 @@ def render_tdee_calculator_tab():
             sleep_quality=quality_map[sleep_quality]
         )
         
+        # Store TDEE result in session state for use in Meals tab
+        st.session_state.tdee_result = results
+        
         # Weight trend validation if provided
         if use_weight_trend:
             validation = calc.validate_with_weight_trend(
@@ -401,8 +404,11 @@ def render_daily_tracker_tab(selected_user: str):
     if not st.session_state.get('authenticated', False):
         st.info("ℹ️ **Guest Mode**: You can view the tracker, but entries can only be saved when logged in. Click **Login** above to create an account.")
     
-    # Initialize tracker with selected user
-    tracker = DailyTracker(user=selected_user)
+    # Initialize tracker with selected user (cache in session state to avoid repeated connections)
+    tracker_key = f'daily_tracker_{selected_user}'
+    if tracker_key not in st.session_state:
+        st.session_state[tracker_key] = DailyTracker(user=selected_user)
+    tracker = st.session_state[tracker_key]
     
     # Initialize session state for entry date if not exists
     if 'entry_date' not in st.session_state:
@@ -976,12 +982,12 @@ def render_create_account_dialog():
 
 
 def render_meals_tab():
-    """Render Meals tab for tracking individual meals and daily progress"""
-    st.header("🍽️ Meal Tracker")
+    """Render Meal Plan tab for tracking daily meal intake"""
+    st.header("🍽️ Meal Plan")
     
     # Check if user is logged in
     if not st.session_state.get('authenticated', False):
-        st.warning("⚠️ Please log in to track meals and view your calorie target")
+        st.warning("⚠️ Please log in to manage your daily meals")
         if st.button("🔐 Login", type="primary", key="meals_login_btn"):
             st.session_state.show_login_dialog = True
             st.rerun()
@@ -994,11 +1000,38 @@ def render_meals_tab():
     if 'meals_tracker' not in st.session_state:
         st.session_state.meals_tracker = MealsTracker(use_sheets=True, user=username)
     
-    # Get user's calorie target and TDEE
-    calorie_target_type = profile.get('calorie_target', 'Maintenance')
-    target_tdee = profile.get('target_tdee', 2500)
+    # Cache meals data to avoid repeated API calls
+    # Only refresh when explicitly needed (after add/edit/delete)
+    if 'meals_cache' not in st.session_state or st.session_state.get('refresh_meals_cache', False):
+        st.session_state.meals_cache = st.session_state.meals_tracker.get_all_meals()
+        st.session_state.refresh_meals_cache = False
     
-    # Calculate actual calorie target based on type
+    meals = st.session_state.meals_cache
+    
+    # Get TDEE from calculator results if available, otherwise from profile
+    if 'tdee_result' in st.session_state and st.session_state.tdee_result:
+        target_tdee = st.session_state.tdee_result.get('tdee', profile.get('target_tdee', 2500))
+    else:
+        target_tdee = profile.get('target_tdee', 2500)
+    
+    # Calculate totals
+    total_calories = sum(meal['calories'] for meal in meals)
+    total_protein = sum(meal.get('protein', 0) for meal in meals)
+    total_carbs = sum(meal.get('carbs', 0) for meal in meals)
+    total_fat = sum(meal.get('fat', 0) for meal in meals)
+    
+    # Top section - metrics and progress
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        # Dropdown for calorie target goal
+        calorie_target_type = st.selectbox(
+            "Your Goal",
+            ["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"],
+            index=["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"].index(profile.get('calorie_target', 'Maintenance')),
+            key="meal_plan_goal"
+        )
+    
+    # Calculate actual calorie target based on selected type
     target_map = {
         'Aggressive Fat Loss': -750,
         'Moderate Fat Loss': -500,
@@ -1010,50 +1043,25 @@ def render_meals_tab():
     calorie_adjustment = target_map.get(calorie_target_type, 0)
     daily_target = target_tdee + calorie_adjustment
     
-    # Show target info
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Your Goal", calorie_target_type)
     with col2:
         st.metric("TDEE", f"{int(target_tdee)} cal")
     with col3:
         st.metric("Daily Target", f"{int(daily_target)} cal")
+    with col4:
+        st.metric("Total Intake", f"{int(total_calories)} cal")
     
     st.markdown("---")
     
-    # Date selector
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        if st.button("← Yesterday", key="meals_yesterday"):
-            if 'meal_date' not in st.session_state:
-                st.session_state.meal_date = datetime.now().date() - timedelta(days=1)
-            else:
-                st.session_state.meal_date = st.session_state.meal_date - timedelta(days=1)
-            st.rerun()
-    with col2:
-        if 'meal_date' not in st.session_state:
-            st.session_state.meal_date = datetime.now().date()
-        selected_date = st.date_input("Date", value=st.session_state.meal_date, key="meal_date_picker")
-        st.session_state.meal_date = selected_date
-    with col3:
-        if st.button("Today →", key="meals_today"):
-            st.session_state.meal_date = datetime.now().date()
-            st.rerun()
-    
-    date_str = selected_date.strftime("%Y-%m-%d")
-    
-    # Get meals from tracker
-    meals = st.session_state.meals_tracker.get_meals_for_date(date_str)
-    
-    # Calculate today's totals
-    total_calories = sum(meal['calories'] for meal in meals)
-    total_protein = sum(meal.get('protein', 0) for meal in meals)
-    total_carbs = sum(meal.get('carbs', 0) for meal in meals)
-    total_fat = sum(meal.get('fat', 0) for meal in meals)
-    
-    # Progress bar
+    # Progress section
     progress = min(total_calories / daily_target, 1.5) if daily_target > 0 else 0
-    st.subheader(f"📊 Today's Progress: {int(total_calories)} / {int(daily_target)} calories")
+    st.subheader(f"📊 Daily Progress")
+    st.markdown(f"""
+        <style>
+        .stProgress > div > div > div > div {{
+            background-color: #0be881;
+        }}
+        </style>
+    """, unsafe_allow_html=True)
     st.progress(min(progress, 1.0))
     
     # Status message
@@ -1061,35 +1069,109 @@ def render_meals_tab():
     if abs(remaining) < 50:
         st.success(f"✅ Perfect! You're right on target!")
     elif remaining > 0:
-        st.info(f"🍴 {int(remaining)} calories remaining for today")
+        st.info(f"🍴 {int(remaining)} calories remaining")
     else:
         st.warning(f"⚠️ {int(abs(remaining))} calories over target")
     
-    # Macro breakdown
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Protein", f"{int(total_protein)}g")
-    with col2:
-        st.metric("Carbs", f"{int(total_carbs)}g")
-    with col3:
-        st.metric("Fat", f"{int(total_fat)}g")
+    st.markdown("---")
+    
+    # Visualizations
+    if meals:
+        st.subheader("📈 Macro Breakdown")
+        
+        col1, col2, col3 = st.columns([1.5, 0.4, 1.5])
+        
+        with col1:
+            # Pie chart for macros
+            macro_calories = {
+                'Protein': total_protein * 4,  # 4 cal/g
+                'Carbs': total_carbs * 4,      # 4 cal/g
+                'Fat': total_fat * 9            # 9 cal/g
+            }
+            
+            fig_pie = go.Figure(data=[go.Pie(
+                labels=list(macro_calories.keys()),
+                values=list(macro_calories.values()),
+                hole=0.4,
+                marker=dict(colors=["#ff5e57", "#0fbcf9", "#0be881"]),
+                textfont=dict(size=14, color='white', family='Arial Black')
+            )])
+            fig_pie.update_layout(
+                title="Calories by Macro",
+                showlegend=True,
+                height=450
+            )
+            st.plotly_chart(fig_pie, use_container_width=True)
+        
+        with col2:
+            # Macro totals - add spacing to center with donut chart
+            st.write("")
+            st.write("")
+            st.write("")
+            st.metric("Total Protein", f"{int(total_protein)}g", f"{int(total_protein * 4)} cal")
+            st.metric("Total Carbs", f"{int(total_carbs)}g", f"{int(total_carbs * 4)} cal")
+            st.metric("Total Fat", f"{int(total_fat)}g", f"{int(total_fat * 9)} cal")
+        
+        with col3:
+            # Bar chart for individual meals
+            meal_names = [meal['name'] for meal in meals]
+            meal_calories = [meal['calories'] for meal in meals]
+            
+            # Calculate y-axis max (highest meal + 300 calories)
+            max_calories = max(meal_calories) if meal_calories else 0
+            y_axis_max = max_calories + 300
+            
+            fig_bar = go.Figure(data=[
+                go.Bar(
+                    x=meal_names,
+                    y=meal_calories,
+                    marker=dict(color="#0be881"),
+                    text=meal_calories,
+                    textposition='auto',
+                    textfont=dict(size=14, color='white', family='Arial Black')
+                )
+            ])
+            fig_bar.update_layout(
+                title="Calories per Meal",
+                xaxis_title="Meal",
+                yaxis_title="Calories",
+                yaxis=dict(range=[0, y_axis_max]),
+                height=450,
+                showlegend=False
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
     
     st.markdown("---")
     
     # Add new meal
-    st.subheader("➕ Log a Meal")
+    st.subheader("➕ Add a Meal")
+    
+    # Initialize input states if not exists
+    if 'clear_meal_inputs' not in st.session_state:
+        st.session_state.clear_meal_inputs = False
+    
+    # Default values - clear after successful add
+    default_name = "" if st.session_state.clear_meal_inputs else ""
+    default_cals = 0
+    default_protein = 0
+    default_carbs = 0
+    default_fat = 0
+    
+    # Reset flag after using it
+    if st.session_state.clear_meal_inputs:
+        st.session_state.clear_meal_inputs = False
     
     col1, col2 = st.columns(2)
     with col1:
-        meal_name = st.text_input("Meal Name", placeholder="e.g., Chicken & Rice, Protein Shake")
-        meal_calories = st.number_input("Calories", min_value=0, max_value=5000, value=0, step=10)
+        meal_name = st.text_input("Meal Name", value=default_name, placeholder="e.g., Chicken & Rice, Protein Shake", key="new_meal_name")
+        meal_calories = st.number_input("Calories", min_value=0, max_value=5000, value=default_cals, step=10, key="new_meal_cals")
     with col2:
-        meal_protein = st.number_input("Protein (g)", min_value=0, max_value=500, value=0, step=1)
+        meal_protein = st.number_input("Protein (g)", min_value=0, max_value=500, value=default_protein, step=1, key="new_meal_protein")
         col_a, col_b = st.columns(2)
         with col_a:
-            meal_carbs = st.number_input("Carbs (g)", min_value=0, max_value=1000, value=0, step=1)
+            meal_carbs = st.number_input("Carbs (g)", min_value=0, max_value=1000, value=default_carbs, step=1, key="new_meal_carbs")
         with col_b:
-            meal_fat = st.number_input("Fat (g)", min_value=0, max_value=300, value=0, step=1)
+            meal_fat = st.number_input("Fat (g)", min_value=0, max_value=300, value=default_fat, step=1, key="new_meal_fat")
     
     if st.button("💾 Add Meal", type="primary"):
         if meal_name and meal_calories > 0:
@@ -1098,35 +1180,67 @@ def render_meals_tab():
                 'calories': meal_calories,
                 'protein': meal_protein,
                 'carbs': meal_carbs,
-                'fat': meal_fat,
-                'time': datetime.now().strftime("%H:%M")
+                'fat': meal_fat
             }
-            # Save to tracker instead of session state
-            st.session_state.meals_tracker.add_meal(date_str, meal_entry)
+            st.session_state.meals_tracker.add_meal(meal_entry)
             st.success(f"✅ Added {meal_name}!")
+            # Set flags to clear inputs and refresh cache on next render
+            st.session_state.clear_meal_inputs = True
+            st.session_state.refresh_meals_cache = True
             st.rerun()
         else:
             st.error("Please enter a meal name and calories")
     
     st.markdown("---")
     
-    # Display meals for the day
+    # Display all meals
     if meals:
-        st.subheader(f"🍽️ Meals for {date_str}")
+        st.subheader(f"📋 Your Daily Meals ({len(meals)} meals)")
         
         for idx, meal in enumerate(meals):
-            col1, col2, col3 = st.columns([3, 2, 1])
-            with col1:
-                st.write(f"**{meal['name']}** ({meal.get('time', 'N/A')})")
-            with col2:
-                st.write(f"{int(meal['calories'])} cal | P: {int(meal.get('protein', 0))}g C: {int(meal.get('carbs', 0))}g F: {int(meal.get('fat', 0))}g")
-            with col3:
-                if st.button("🗑️", key=f"delete_meal_{idx}"):
-                    # Delete from tracker instead of session state
-                    st.session_state.meals_tracker.delete_meal(date_str, idx)
-                    st.rerun()
+            with st.expander(f"**{meal['name']}** - {int(meal['calories'])} cal | P: {int(meal.get('protein', 0))}g C: {int(meal.get('carbs', 0))}g F: {int(meal.get('fat', 0))}g"):
+                # Edit form for this meal
+                with st.form(key=f"edit_meal_form_{idx}"):
+                    st.markdown("### Edit Meal")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        edit_name = st.text_input("Meal Name", value=meal['name'], key=f"edit_name_{idx}")
+                        edit_calories = st.number_input("Calories", min_value=0, max_value=5000, value=int(meal['calories']), step=10, key=f"edit_cals_{idx}")
+                    with col2:
+                        edit_protein = st.number_input("Protein (g)", min_value=0, max_value=500, value=int(meal.get('protein', 0)), step=1, key=f"edit_protein_{idx}")
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            edit_carbs = st.number_input("Carbs (g)", min_value=0, max_value=1000, value=int(meal.get('carbs', 0)), step=1, key=f"edit_carbs_{idx}")
+                        with col_b:
+                            edit_fat = st.number_input("Fat (g)", min_value=0, max_value=300, value=int(meal.get('fat', 0)), step=1, key=f"edit_fat_{idx}")
+                    
+                    col_save, col_delete = st.columns([1, 1])
+                    with col_save:
+                        if st.form_submit_button("💾 Save Changes", type="primary", use_container_width=True):
+                            if edit_name and edit_calories > 0:
+                                updated_meal = {
+                                    'name': edit_name,
+                                    'calories': edit_calories,
+                                    'protein': edit_protein,
+                                    'carbs': edit_carbs,
+                                    'fat': edit_fat
+                                }
+                                st.session_state.meals_tracker.update_meal(idx, updated_meal)
+                                st.success(f"✅ Updated {edit_name}!")
+                                st.session_state.refresh_meals_cache = True
+                                st.rerun()
+                            else:
+                                st.error("Please enter a meal name and calories")
+                    
+                    with col_delete:
+                        if st.form_submit_button("🗑️ Delete Meal", use_container_width=True):
+                            st.session_state.meals_tracker.delete_meal(idx)
+                            st.success("✅ Meal deleted!")
+                            st.session_state.refresh_meals_cache = True
+                            st.rerun()
     else:
-        st.info("No meals logged for this day yet. Add your first meal above!")
+        st.info("No meals added yet. Add your first meal above!")
 
 
 def render_my_profile_tab():
@@ -1227,8 +1341,13 @@ def render_my_profile_tab():
             calorie_target = st.selectbox("Calorie Target Goal",
                                          ["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"],
                                          index=["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"].index(profile.get('calorie_target', 'Maintenance')))
-            target_tdee = st.number_input("Your TDEE (cal/day)", 1000, 6000, int(profile.get('target_tdee', 2500)), 50,
-                                         help="Use the TDEE Calculator to find your accurate TDEE")
+            # Auto-fill TDEE from calculator if available
+            if 'tdee_result' in st.session_state and st.session_state.tdee_result:
+                default_tdee = int(st.session_state.tdee_result.get('tdee', profile.get('target_tdee', 2500)))
+            else:
+                default_tdee = int(profile.get('target_tdee', 2500))
+            target_tdee = st.number_input("Your TDEE (cal/day)", 1000, 6000, default_tdee, 50,
+                                         help="Auto-filled from TDEE Calculator. Run the calculator to update this value.")
         
         if st.form_submit_button("💾 Save Profile", type="primary", use_container_width=True):
             updated_data = {
@@ -1401,7 +1520,7 @@ def main():
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 TDEE Calculator", 
         "📝 Daily Tracker",
-        "🍽️ Meals",
+        "🍽️ Meal Plan",
         "👤 My Profile",
         "⚡ Quick Reference", 
         "🔖 Version"

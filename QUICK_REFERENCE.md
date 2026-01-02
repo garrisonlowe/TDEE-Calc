@@ -50,7 +50,43 @@ Calculates your Total Daily Energy Expenditure - the total calories you burn per
 
 ---
 
-### 2️⃣ Daily Tracker Tab
+### 2️⃣ Meal Plan Tab
+
+**What it does:**
+Create and manage a library of meals you eat every day, with visual macro breakdown.
+
+**How to use:**
+1. Select your goal from the dropdown (Aggressive Fat Loss, Maintenance, Lean Bulk, etc.)
+2. Add meals to your library:
+   - Enter meal name (e.g., "Breakfast Bowl", "Protein Shake")
+   - Enter calories and macros (protein, carbs, fat)
+   - Click **"➕ Add Meal"**
+3. Edit existing meals:
+   - Click the ▶ arrow next to any meal
+   - Modify values in the form
+   - Click **"💾 Save"** or **"🗑️ Delete"**
+4. Review your totals and charts
+
+**What you'll see:**
+- **Your Goal**: Dropdown to switch between diet phases
+- **TDEE**: Auto-filled from TDEE Calculator
+- **Daily Target**: Automatically calculated based on goal selection
+- **Total Intake**: Sum of all meals in your library
+- **Progress Bar**: Visual representation of calories consumed vs target
+- **Donut Chart**: Calories broken down by macro (Protein, Carbs, Fat)
+- **Bar Chart**: Calories per individual meal
+- **Macro Totals**: Total grams and calories from protein, carbs, and fat
+
+**Pro Tips:**
+- Run the TDEE Calculator first to auto-fill your TDEE
+- This is a meal library (meals you eat every day), not a daily tracker
+- Edit meals anytime by clicking the arrow next to them
+- Charts update instantly when you change your goal
+- All data saves to Google Sheets automatically
+
+---
+
+### 3️⃣ Daily Tracker Tab
 
 **What it does:**
 Track your daily metrics and see your progress over time.
@@ -84,7 +120,7 @@ Track your daily metrics and see your progress over time.
 
 ---
 
-### 3️⃣ My Profile Tab
+### 4️⃣ My Profile Tab
 
 **What it does:**
 Edit your personal defaults and change your password.
@@ -110,17 +146,18 @@ These values auto-populate in the TDEE Calculator!
 
 ### "I want to lose weight"
 1. Use TDEE Calculator to get your TDEE
-2. Choose a fat loss target (Moderate = 500 cal deficit = 1 lb/week)
-3. Eat that many calories daily
-4. Track in Daily Tracker tab
-5. After 2 weeks, use Weight Trend Validation to confirm your actual TDEE
-6. Adjust calories if needed
+2. Go to Meal Plan tab and select "Moderate Fat Loss" from the goal dropdown
+3. Build your meal library with meals that fit your target calories
+4. Eat these meals daily
+5. Track your progress in Daily Tracker tab
+6. After 2 weeks, use Weight Trend Validation to confirm your actual TDEE
+7. Adjust calories if needed
 
 ### "I want to gain muscle"
 1. Calculate your TDEE
-2. Choose Lean Bulk target (+200 cal = 0.5 lb/week)
-3. Eat that many calories with high protein
-4. Track progress in Daily Tracker
+2. Go to Meal Plan tab and select "Lean Bulk" from the goal dropdown
+3. Build your meal library with high-protein meals that hit your target
+4. Track progress in Daily Tracker tab
 5. Monitor that weight is going up slowly and lifts are improving
 
 ### "I want to maintain my weight"
