@@ -1154,6 +1154,14 @@ def main():
     
     st.markdown("---")
     
+    # Show login dialog if flag is set (BEFORE tabs)
+    if st.session_state.get('show_login_dialog', False):
+        render_login_dialog()
+    
+    # Show create account dialog if flag is set (BEFORE tabs)
+    if st.session_state.get('show_create_account_dialog', False):
+        render_create_account_dialog()
+    
     # Track current tab with session state
     if 'current_tab' not in st.session_state:
         st.session_state.current_tab = 0
@@ -1179,17 +1187,6 @@ def main():
         render_my_profile_tab()
     
     with tab4:
-        # Display the README content
-        try:
-            with open('readme.md', 'r', encoding='utf-8') as f:
-                readme_content = f.read()
-            st.markdown(readme_content, unsafe_allow_html=True)
-        except FileNotFoundError:
-            st.error("README.md file not found!")
-        except Exception as e:
-            st.error(f"Error loading README: {str(e)}")
-    
-    with tab5:
         # Display the Quick Reference Guide
         try:
             with open('QUICK_REFERENCE.md', 'r', encoding='utf-8') as f:
@@ -1200,7 +1197,7 @@ def main():
         except Exception as e:
             st.error(f"Error loading Quick Reference: {str(e)}")
     
-    with tab6:
+    with tab5:
         # Display the Version history
         try:
             with open('VERSION.md', 'r', encoding='utf-8') as f:
@@ -1210,14 +1207,6 @@ def main():
             st.error("VERSION.md file not found!")
         except Exception as e:
             st.error(f"Error loading Version history: {str(e)}")
-    
-    # Show login dialog if flag is set
-    if st.session_state.get('show_login_dialog', False):
-        render_login_dialog()
-    
-    # Show create account dialog if flag is set
-    if st.session_state.get('show_create_account_dialog', False):
-        render_create_account_dialog()
 
 
 if __name__ == "__main__":
