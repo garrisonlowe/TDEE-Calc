@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import json
 import pandas as pd
 import plotly.graph_objects as go
+import extra_streamlit_components as stx
 
 # Import the calculator logic and tracker
 from tdee_calculator import TDEECalculator
@@ -882,6 +883,9 @@ def render_login_dialog():
                     st.session_state.username = username
                     st.session_state.user_profile = user_data
                     st.session_state.show_login_dialog = False
+                    # Store username in cookie for persistent login
+                    cookie_manager = stx.CookieManager()
+                    cookie_manager.set('tdee_username', username, max_age=30*24*60*60)  # 30 days
                     st.success("Login successful!")
                     st.rerun()
                 else:
@@ -961,6 +965,9 @@ def render_create_account_dialog():
                 st.session_state.username = new_username
                 st.session_state.user_profile = user_data
                 st.session_state.show_create_account_dialog = False
+                # Store username in cookie for persistent login
+                cookie_manager = stx.CookieManager()
+                cookie_manager.set('tdee_username', new_username, max_age=30*24*60*60)  # 30 days
                 st.success("Account created successfully! You are now logged in.")
                 st.rerun()
             else:
@@ -1142,6 +1149,9 @@ def main():
                 st.session_state.authenticated = False
                 st.session_state.username = None
                 st.session_state.user_profile = None
+                # Clear cookie on logout
+                cookie_manager = stx.CookieManager()
+                cookie_manager.delete('tdee_username')
                 st.rerun()
         else:
             # Show login and create account buttons if not logged in
