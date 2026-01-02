@@ -224,8 +224,6 @@ def render_tdee_calculator_tab():
         # Set flag to keep showing results
         st.session_state.show_tdee_results = True
         
-        st.markdown("---")
-        
         # Calculate TDEE
         # Convert imperial to metric
         weight_kg = lbs_to_kg(weight)
@@ -1160,18 +1158,16 @@ def main():
     st.markdown("---")
     
     # Show login dialog if flag is set (BEFORE tabs)
-    if st.session_state.get('show_login_dialog', False):
+    show_login = st.session_state.get('show_login_dialog', False)
+    if show_login:
+        st.session_state.show_login_dialog = False  # Clear immediately
         render_login_dialog()
-        # Clear flag immediately after showing dialog so it doesn't reopen on every interaction
-        if st.session_state.get('show_login_dialog', False):
-            st.session_state.show_login_dialog = False
     
     # Show create account dialog if flag is set (BEFORE tabs)
-    if st.session_state.get('show_create_account_dialog', False):
+    show_create = st.session_state.get('show_create_account_dialog', False)
+    if show_create:
+        st.session_state.show_create_account_dialog = False  # Clear immediately
         render_create_account_dialog()
-        # Clear flag immediately after showing dialog so it doesn't reopen on every interaction
-        if st.session_state.get('show_create_account_dialog', False):
-            st.session_state.show_create_account_dialog = False
     
     # Track current tab with session state
     if 'current_tab' not in st.session_state:
