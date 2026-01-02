@@ -508,7 +508,7 @@ def render_daily_tracker_tab(selected_user: str):
     weekly_avg = tracker.calculate_weekly_averages(date_str)
     
     if weekly_avg and weekly_avg['days_tracked'] > 0:
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             if weekly_avg['avg_weight']:
@@ -522,6 +522,8 @@ def render_daily_tracker_tab(selected_user: str):
         with col3:
             if weekly_avg['avg_sleep']:
                 st.metric("Avg Sleep", f"{weekly_avg['avg_sleep']:.1f} hrs")
+        
+        with col4:
             st.metric("Workouts", f"{weekly_avg['total_workouts']}/{weekly_avg['days_tracked']}")
         
         # Charts Section
@@ -734,7 +736,7 @@ def render_daily_tracker_tab(selected_user: str):
                                                              key="edit_energy")
                             
                             # Update and Delete buttons
-                            btn_col1, btn_col2, btn_col3 = st.columns([1, 2, 1])
+                            btn_col1, btn_col2, btn_col3 = st.columns([1, 1.5, 1])
                             with btn_col1:
                                 if st.button("💾 Update Entry", type="primary", key="update_entry_btn"):
                                     updated_data = {
@@ -761,8 +763,6 @@ def render_daily_tracker_tab(selected_user: str):
                                     st.rerun()
                             
                             with btn_col3:
-                                # Empty column for spacing
-                                st.write("")
                                 if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
                                     if tracker.delete_entry(selected_edit_date):
                                         st.success(f"✅ Entry deleted for {selected_edit_date}!")
