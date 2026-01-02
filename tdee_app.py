@@ -763,7 +763,10 @@ def render_daily_tracker_tab(selected_user: str):
                                     st.rerun()
                             
                             with btn_col3:
-                                if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
+                                # Right-align the delete button within this column
+                                _, right_align = st.columns([2, 1])
+                                with right_align:
+                                    if st.button("🗑️ Delete Entry", type="secondary", key="delete_entry_btn"):
                                     if tracker.delete_entry(selected_edit_date):
                                         st.success(f"✅ Entry deleted for {selected_edit_date}!")
                                         st.rerun()
