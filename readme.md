@@ -7,6 +7,29 @@ Research-backed, highly accurate TDEE (Total Daily Energy Expenditure) calculato
 
 ### Link to App! -> https://tdee-calc.streamlit.app/
 
+## Features
+
+### Calculator Tab
+- 🧮 **Dual BMR Calculation**: Compares Mifflin-St Jeor and Katch-McArdle formulas
+- 🔥 **Macro-Specific TEF**: Accurate thermic effect based on your actual protein/carb/fat intake
+- 🚶 **Detailed Activity Breakdown**: Separate inputs for walking, standing, light/moderate activity
+- 🏋️ **Workout-Specific EPOC**: Different EPOC values for cardio, strength, HIIT, circuits
+- ⚖️ **Weight Trend Validation** (GOLD STANDARD): Uses actual weight change over time to calculate true TDEE
+- 📊 **Multiple Calorie Targets**: Fat loss (aggressive/moderate), maintenance, muscle gain (lean/standard)
+
+### Daily Tracker Tab
+- 📅 **Track daily metrics**: Weight, calories, protein/carbs/fat, steps, sleep, energy levels
+- 📈 **Visual analytics**: 5 interactive charts showing your complete history
+  - Weight progress over time
+  - Calories & macros breakdown
+  - Daily step count
+  - Sleep duration tracking
+  - Energy level trends
+- 🔍 **Pan & scroll charts**: Navigate through your entire data history
+- ☁️ **Cloud storage**: Data automatically synced to Google Sheets
+- 👥 **Multi-user support**: Track multiple people separately (perfect for families!)
+- 💾 **Data persistence**: Never lose your entries, accessible from any device
+
 <!-- ### Option 1: Launch Script
 ```bash
 chmod +x run_calculator.sh
@@ -189,6 +212,32 @@ Most calculators:
 - When activity levels change significantly
 - When encountering plateaus
 
+## How The Calculator Works
+
+### Why This Calculator is Different
+
+Most TDEE calculators use overly simple activity multipliers. This one breaks down your energy expenditure into precise components based on peer-reviewed research.
+
+### Components Explained
+
+**BMR (Basal Metabolic Rate)**: Calories burned at complete rest  
+**TEF (Thermic Effect of Food)**: Calories burned digesting food  
+**NEAT (Non-Exercise Activity)**: Daily movement, fidgeting, walking  
+**EAT (Exercise Activity)**: Calories during structured workouts  
+**EPOC (Excess Post-Exercise Oxygen Consumption)**: "Afterburn" effect
+
+### Sleep's Impact on Metabolism
+
+Poor sleep drastically reduces both BMR and NEAT through:
+- Reduced insulin sensitivity
+- Hormonal dysregulation (leptin ↓18%, ghrelin ↑28%)
+- Decreased spontaneous movement
+- Metabolic "grogginess"
+
+### Weight Trend Validation
+
+The gold standard for TDEE accuracy is reverse-engineering from weight change data. Track for 14+ days and use the weight trend feature for ±2-5% accuracy!
+
 ## Technical Details
 
 ### BMR Formulas Used
@@ -225,31 +274,73 @@ Example:
 - Balance: (2.2 × 3500) / 14 = -550 cal/day
 - TDEE: 2500 - (-550) = 3050 cal/day
 
+## Data Persistence
+
+The app uses **Google Sheets** for cloud-based data storage, ensuring your entries persist across sessions and devices.
+
+### Features
+- ☁️ **Cloud sync** - Data stored in your Google Drive
+- 👨‍👩‍👧‍👦 **Multi-user support** - Separate tracking for multiple users
+- 📊 **Automatic backup** - Never lose your data
+- 📱 **Access anywhere** - Works on any device with the deployed link
+
+### Setup
+
+For deployment setup, see [GOOGLE_SHEETS_SETUP.md](GOOGLE_SHEETS_SETUP.md)
+
+**Local fallback:** If Google Sheets isn't configured, the app automatically falls back to local JSON storage.
+
+## Multi-User Support
+
+Track multiple people without data mixing:
+
+1. Select user from dropdown in Daily Tracker tab
+2. Add new users with the "Add New User" expander
+3. Each user gets their own:
+   - Google Sheets worksheet
+   - Local JSON file (if not using Sheets)
+   - Complete data separation
+
+Perfect for families or fitness coaching!
+
 ## Requirements
 
 - Python 3.8+
 - Streamlit
-- All dependencies installed via pip
+- Pandas
+- Plotly
+- Google Sheets API (gspread, google-auth)
 
 ```bash
-pip install streamlit --break-system-packages
+pip install -r requirements.txt
 ```
 
 ## Files Included
 
 - `tdee_app.py` - Main Streamlit application
 - `tdee_calculator.py` - Core calculation logic
+- `daily_tracker.py` - Data persistence layer (Google Sheets + JSON)
+- `requirements.txt` - Python dependencies
+- `credentials.json` - Google Sheets API credentials (not in repo)
+- `GOOGLE_SHEETS_SETUP.md` - Setup guide for cloud storage
 - `run_calculator.sh` - Launcher script
 - `README.md` - This file
 
 ## Research Citations
 
-- Mifflin MD et al. (1990) - A new predictive equation for REE
-- Frankenfield D et al. (2005) - Comparison of predictive equations for RMR
-- Johnstone AM et al. (2005) - Factors influencing BMR variation
-- Trexler ET et al. (2014) - Metabolic adaptation to weight loss
-- Bersheim E & Bahr R (2003) - Effect of exercise on EPOC
-- Various EPOC studies (2014-2021)
+### Key Research Studies
+
+- **Mifflin MD et al. (1990)** - A new predictive equation for REE / BMR equation development
+- **Frankenfield D et al. (2005)** - Comparison of predictive equations for RMR / BMR equation comparison study
+- **Johnstone AM et al. (2005)** - Factors influencing BMR variation / Metabolic variation factors
+- **Trexler ET et al. (2014)** - Metabolic adaptation to weight loss / Metabolic adaptation in athletes
+- **Sharma & Kavuru (2010)** - Sleep and metabolism overview
+- **Spiegel et al. (2004)** - Sleep restriction effects on hormones
+- **Schoenfeld et al. (2016)** - Rest intervals and hypertrophy
+- **Bersheim E & Bahr R (2003)** - Effect of exercise on EPOC
+- **Multiple 2014-2021 studies** - EPOC research
+
+All formulas and adjustments are based on peer-reviewed research.
 
 ## License
 

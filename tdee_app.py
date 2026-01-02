@@ -766,7 +766,7 @@ def main():
     st.markdown("Your personalized fitness companion")
     
     # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "📖 How It Works", "🔬 Methodology"])
+    tab1, tab2, tab3 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "📖 Read Me!"])
     
     with tab1:
         render_tdee_calculator_tab()
@@ -775,53 +775,15 @@ def main():
         render_daily_tracker_tab()
     
     with tab3:
-        # How It Works content (abbreviated for space)
-        st.header("How It Works")
-        st.markdown("""
-        ### Why This Calculator is Different
-        
-        Most TDEE calculators use overly simple activity multipliers. This one breaks down your energy
-        expenditure into precise components based on peer-reviewed research.
-        
-        ### Components Explained
-        
-        **BMR (Basal Metabolic Rate)**: Calories burned at complete rest
-        **TEF (Thermic Effect of Food)**: Calories burned digesting food
-        **NEAT (Non-Exercise Activity)**: Daily movement, fidgeting, walking
-        **EAT (Exercise Activity)**: Calories during structured workouts
-        **EPOC (Excess Post-Exercise Oxygen Consumption)**: "Afterburn" effect
-        
-        ### Sleep's Impact on Metabolism
-        
-        Poor sleep drastically reduces both BMR and NEAT through:
-        - Reduced insulin sensitivity
-        - Hormonal dysregulation (leptin ↓18%, ghrelin ↑28%)
-        - Decreased spontaneous movement
-        - Metabolic "grogginess"
-        
-        ### Weight Trend Validation
-        
-        The gold standard for TDEE accuracy is reverse-engineering from weight change data.
-        Track for 14+ days and use the weight trend feature for ±2-5% accuracy!
-        """)
-    
-    with tab4:
-        # Methodology content (abbreviated for space)
-        st.header("Methodology & Research")
-        st.markdown("""
-        ### Key Research Citations
-        
-        - **Mifflin et al. (1990)** - BMR equation development
-        - **Frankenfield et al. (2005)** - BMR equation comparison study
-        - **Johnstone et al. (2005)** - Metabolic variation factors
-        - **Trexler et al. (2014)** - Metabolic adaptation in athletes
-        - **Sharma & Kavuru (2010)** - Sleep and metabolism overview
-        - **Spiegel et al. (2004)** - Sleep restriction effects on hormones
-        - **Schoenfeld et al. (2016)** - Rest intervals and hypertrophy
-        - **Multiple 2014-2021 studies** - EPOC research
-        
-        All formulas and adjustments are based on peer-reviewed research.
-        """)
+        # Display the README content
+        try:
+            with open('readme.md', 'r', encoding='utf-8') as f:
+                readme_content = f.read()
+            st.markdown(readme_content, unsafe_allow_html=True)
+        except FileNotFoundError:
+            st.error("README.md file not found!")
+        except Exception as e:
+            st.error(f"Error loading README: {str(e)}")
 
 
 if __name__ == "__main__":
