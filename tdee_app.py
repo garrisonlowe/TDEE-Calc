@@ -371,28 +371,260 @@ def render_tdee_calculator_tab():
         # Calorie targets
         st.markdown("---")
         st.subheader("🎯 Calorie Targets")
+        st.markdown("Select your goal to update your profile and meal plan automatically")
         
-        col1, col2, col3, col4 = st.columns(4)
+        # Get current calorie target from profile
+        current_target = st.session_state.user_profile.get('calorie_target', 'Maintenance') if st.session_state.get('authenticated', False) else 'Maintenance'
         
-        with col1:
-            st.metric("Aggressive Cut", f"{tdee_to_display - 750:.0f} cal",
-                     "-750 cal/day",
-                     help="~1.5 lbs/week loss")
+        # Create 5 columns for the targets
+        col1, col2, col3, col4, col5 = st.columns(5)
         
-        with col2:
-            st.metric("Moderate Cut", f"{tdee_to_display - 500:.0f} cal",
-                     "-500 cal/day",
-                     help="~1 lb/week loss")
+        # Define targets
+        targets = [
+            ("Aggressive Fat Loss", -750, "~1.5 lbs/wk", col1),
+            ("Moderate Fat Loss", -500, "~1 lb/wk", col2),
+            ("Maintenance", 0, "Maintain", col3),
+            ("Lean Bulk", 250, "~0.5 lb/wk", col4),
+            ("Standard Bulk", 500, "~1 lb/wk", col5)
+        ]
         
-        with col3:
-            st.metric("Lean Bulk", f"{tdee_to_display + 250:.0f} cal",
-                     "+250 cal/day",
-                     help="~0.5 lb/week gain")
+        selected_target = current_target
         
-        with col4:
-            st.metric("Standard Bulk", f"{tdee_to_display + 500:.0f} cal",
-                     "+500 cal/day",
-                     help="~1 lb/week gain")
+        for target_name, adjustment, description, col in targets:
+            with col:
+                # Create clickable button styled as metric
+                is_selected = (target_name == current_target)
+                border_style = "border: 3px solid #0be881;" if is_selected else "border: 1px solid rgba(49, 51, 63, 0.2);"
+                bg_style = "background: rgba(103, 126, 234, 0.1);" if is_selected else "background: transparent;"
+                
+                # Color for adjustment (red for negative, green for positive)
+                adjustment_color = "#ff4444" if adjustment < 0 else ("#0be881" if adjustment > 0 else "#888")
+                adjustment_bg = "background: rgba(255, 68, 68, 0.2);" if adjustment < 0 else ("background: rgba(11, 232, 129, 0.2);" if adjustment > 0 else "background: rgba(136, 136, 136, 0.2);")
+                
+                button_html = f"""
+                    <div style="{border_style} {bg_style} border-radius: 10px; padding: 16px 10px; text-align: center; cursor: pointer; min-height: 160px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px;">
+                        <p style="margin: 0 0 10px 0; color: #fff; font-size: 1rem; font-weight: 600; line-height: 1.2;">{target_name}</p>
+                        <h2 style="margin: 10px 0; color: #fff; font-size: 1.8rem; font-weight: 700;">{tdee_to_display + adjustment:.0f} cals</h2>
+                        <div style="{adjustment_bg} border-radius: 6px; display: inline-block; padding: 4px 12px; margin: 6px auto;">
+                            <p style="margin: 0; color: {adjustment_color}; font-size: 1rem; font-weight: 600;">{adjustment:+d} cal</p>
+                        </div>
+                        <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.7); font-size: 0.75rem;">{description}</p>
+                    </div>
+                """
+                st.markdown(button_html, unsafe_allow_html=True)
+                
+                # Button to select this target
+                if st.button(f"Select", key=f"select_{target_name}", use_container_width=True):
+                    selected_target = target_name
+                    # Update profile if logged in
+                    if st.session_state.get('authenticated', False):
+                        st.session_state.user_profile['calorie_target'] = target_name
+                        # Update in Google Sheets
+                        try:
+                            auth_instance = Auth()
+                            auth_instance.update_user_data(st.session_state.username, {'calorie_target': target_name})
+                            st.success(f"✅ Goal updated to {target_name}!")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Failed to save: {str(e)}")
+                    else:
+                        st.warning("⚠️ Login to save your goal preference")
+        
+        # Calculate target calories for macro recommendations based on selected/current target
+        target_adjustment = {
+            'Aggressive Fat Loss': -750,
+            'Moderate Fat Loss': -500,
+            'Maintenance': 0,
+            'Lean Bulk': 250,
+            'Standard Bulk': 500
+        }.get(current_target, 0)
+        
+        macro_target_calories = tdee_to_display + target_adjustment
+        
+        # Macro recommendations
+        st.markdown("---")
+        st.subheader("🍗 Macro Recommendations")
+        st.markdown(f"Macro splits for your **{current_target}** goal ({macro_target_calories:.0f} calories/day)")
+        
+        # Create tabs for different macro splits
+        macro_tab1, macro_tab2, macro_tab3, macro_tab4, macro_tab5 = st.tabs([
+            "🏋️ High Protein", 
+            "⚖️ Balanced", 
+            "🍚 High Carb",
+            "🥑 Keto/Low Carb",
+            "💪 Moderate Low Carb"
+        ])
+        
+        # Calculate macros for each split based on selected goal calories
+        with macro_tab1:
+            # High Protein: 35% protein, 30% fat, 35% carbs
+            protein_cal = macro_target_calories * 0.35
+            fat_cal = macro_target_calories * 0.30
+            carbs_cal = macro_target_calories * 0.35
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Protein</h3>
+                        <h1 style="color: white; margin: 10px 0;">{protein_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{protein_cal:.0f} cal (35%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Fat</h3>
+                        <h1 style="color: white; margin: 10px 0;">{fat_cal/9:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{fat_cal:.0f} cal (30%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Carbs</h3>
+                        <h1 style="color: white; margin: 10px 0;">{carbs_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{carbs_cal:.0f} cal (35%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            st.write("")
+            st.info("💡 **Best for:** Muscle building, athletic performance, and preserving muscle during fat loss. Higher protein supports recovery and satiety.")
+        
+        with macro_tab2:
+            # Balanced: 30% protein, 30% fat, 40% carbs
+            protein_cal = macro_target_calories * 0.30
+            fat_cal = macro_target_calories * 0.30
+            carbs_cal = macro_target_calories * 0.40
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Protein</h3>
+                        <h1 style="color: white; margin: 10px 0;">{protein_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{protein_cal:.0f} cal (30%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Fat</h3>
+                        <h1 style="color: white; margin: 10px 0;">{fat_cal/9:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{fat_cal:.0f} cal (30%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Carbs</h3>
+                        <h1 style="color: white; margin: 10px 0;">{carbs_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{carbs_cal:.0f} cal (40%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            st.write(" ")
+            st.info("💡 **Best for:** General health, sustainable long-term eating, and moderate activity levels. Provides flexibility and variety.")
+        
+        with macro_tab3:
+            # High Carb: 25% protein, 20% fat, 55% carbs
+            protein_cal = macro_target_calories * 0.25
+            fat_cal = macro_target_calories * 0.20
+            carbs_cal = macro_target_calories * 0.55
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Protein</h3>
+                        <h1 style="color: white; margin: 10px 0;">{protein_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{protein_cal:.0f} cal (25%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Fat</h3>
+                        <h1 style="color: white; margin: 10px 0;">{fat_cal/9:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{fat_cal:.0f} cal (20%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Carbs</h3>
+                        <h1 style="color: white; margin: 10px 0;">{carbs_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{carbs_cal:.0f} cal (55%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            st.write(" ")
+            st.info("💡 **Best for:** Endurance athletes, high-intensity training, and those who respond well to carbohydrates. Maximizes glycogen for performance.")
+        
+        with macro_tab4:
+            # Keto/Low Carb: 25% protein, 70% fat, 5% carbs
+            protein_cal = macro_target_calories * 0.25
+            fat_cal = macro_target_calories * 0.70
+            carbs_cal = macro_target_calories * 0.05
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Protein</h3>
+                        <h1 style="color: white; margin: 10px 0;">{protein_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{protein_cal:.0f} cal (25%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Fat</h3>
+                        <h1 style="color: white; margin: 10px 0;">{fat_cal/9:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{fat_cal:.0f} cal (70%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Carbs</h3>
+                        <h1 style="color: white; margin: 10px 0;">{carbs_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{carbs_cal:.0f} cal (5%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            st.write(" ")
+            st.info("💡 **Best for:** Ketogenic dieting, appetite control, and those seeking metabolic flexibility. Promotes fat adaptation and ketosis.")
+        
+        with macro_tab5:
+            # Moderate Low Carb: 30% protein, 40% fat, 30% carbs
+            protein_cal = macro_target_calories * 0.30
+            fat_cal = macro_target_calories * 0.40
+            carbs_cal = macro_target_calories * 0.30
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Protein</h3>
+                        <h1 style="color: white; margin: 10px 0;">{protein_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{protein_cal:.0f} cal (30%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Fat</h3>
+                        <h1 style="color: white; margin: 10px 0;">{fat_cal/9:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{fat_cal:.0f} cal (40%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="color: white; margin: 0;">Carbs</h3>
+                        <h1 style="color: white; margin: 10px 0;">{carbs_cal/4:.0f}g</h1>
+                        <p style="color: #e0e0e0; margin: 0;">{carbs_cal:.0f} cal (30%)</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+            st.info("💡 **Best for:** Fat loss while maintaining performance, insulin sensitivity, and transitioning between higher/lower carb approaches.")
 
 
 def render_daily_tracker_tab(selected_user: str):
@@ -1044,9 +1276,9 @@ def render_meals_tab():
     daily_target = target_tdee + calorie_adjustment
     
     with col2:
-        st.metric("TDEE", f"{int(target_tdee)} cal")
+        st.metric("TDEE", f"{target_tdee:.0f} cal")
     with col3:
-        st.metric("Daily Target", f"{int(daily_target)} cal")
+        st.metric("Daily Target", f"{daily_target:.0f} cal")
     with col4:
         st.metric("Total Intake", f"{int(total_calories)} cal")
     
@@ -1066,7 +1298,7 @@ def render_meals_tab():
     
     # Status message
     remaining = daily_target - total_calories
-    if abs(remaining) < 50:
+    if abs(remaining) < 100:
         st.success(f"✅ Perfect! You're right on target!")
     elif remaining > 0:
         st.info(f"🍴 {int(remaining)} calories remaining")
@@ -1466,7 +1698,7 @@ def main():
         st.session_state.show_login_dialog = False
     
     # Main app header with login/logout button
-    col_title, col_spacer, col_login = st.columns([3, 1, 1])
+    col_title, col_spacer, col_login = st.columns([3.5, 1, 0.7])
     
     with col_title:
         st.title("💪 TDEE Calculator & Daily Tracker")
@@ -1488,7 +1720,7 @@ def main():
                 st.rerun()
         else:
             # Show login and create account buttons if not logged in
-            col_login_btn, col_create_btn = st.columns(2)
+            col_login_btn, col_create_btn = st.columns([1, 1.3])
             with col_login_btn:
                 if st.button("🔐 Login", type="primary", use_container_width=True):
                     st.session_state.show_login_dialog = True
