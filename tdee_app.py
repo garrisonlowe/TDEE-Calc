@@ -394,7 +394,7 @@ def render_tdee_calculator_tab():
             with col:
                 # Create clickable button styled as metric
                 is_selected = (target_name == current_target)
-                border_style = "border: 3px solid #0be881;" if is_selected else "border: 1px solid rgba(49, 51, 63, 0.2);"
+                border_style = "border: 1px solid rgba(49, 51, 63, 0.2); box-shadow: inset 0 0 0 3px #0be881;" if is_selected else "border: 1px solid rgba(49, 51, 63, 0.2);"
                 bg_style = "background: rgba(103, 126, 234, 0.1);" if is_selected else "background: transparent;"
                 
                 # Color for adjustment (red for negative, green for positive)
@@ -418,11 +418,14 @@ def render_tdee_calculator_tab():
                     selected_target = target_name
                     # Update profile if logged in
                     if st.session_state.get('authenticated', False):
+                        # Update session state immediately
                         st.session_state.user_profile['calorie_target'] = target_name
                         # Update in Google Sheets
                         try:
-                            auth_instance = Auth()
+                            auth_instance = AuthManager()
                             auth_instance.update_user_data(st.session_state.username, {'calorie_target': target_name})
+                            # Force keep TDEE results visible
+                            st.session_state.show_tdee_results = True
                             st.success(f"✅ Goal updated to {target_name}!")
                             st.rerun()
                         except Exception as e:
@@ -623,7 +626,7 @@ def render_tdee_calculator_tab():
                         <p style="color: #e0e0e0; margin: 0;">{carbs_cal:.0f} cal (30%)</p>
                     </div>
                 """, unsafe_allow_html=True)
-                
+            st.write(" ")
             st.info("💡 **Best for:** Fat loss while maintaining performance, insulin sensitivity, and transitioning between higher/lower carb approaches.")
 
 
@@ -1226,6 +1229,7 @@ def render_meals_tab():
         return
     
     username = st.session_state.get('username')
+    # Always get fresh profile from session state
     profile = st.session_state.get('user_profile', {})
     
     # Initialize meals tracker
@@ -1255,11 +1259,12 @@ def render_meals_tab():
     # Top section - metrics and progress
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        # Dropdown for calorie target goal
+        # Dropdown for calorie target goal - always read fresh from session state
+        current_goal = st.session_state.user_profile.get('calorie_target', 'Maintenance')
         calorie_target_type = st.selectbox(
             "Your Goal",
             ["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"],
-            index=["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"].index(profile.get('calorie_target', 'Maintenance')),
+            index=["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"].index(current_goal),
             key="meal_plan_goal"
         )
     
@@ -1649,7 +1654,8 @@ def main():
         st.session_state.show_login_dialog = False
     
     # Auto-login from cookie if exists and not already authenticated
-    if not st.session_state.authenticated:
+    # Only reload from sheets on initial load, not on every rerun
+    if not st.session_state.authenticated and 'user_profile' not in st.session_state:
         stored_username = cookie_manager.get('tdee_username')
         if stored_username:
             # Auto-login user
