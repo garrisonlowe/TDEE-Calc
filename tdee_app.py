@@ -342,6 +342,7 @@ def render_daily_tracker_tab():
     
     with col2:
         # Add new user
+        st.markdown("<br>", unsafe_allow_html=True)  # Fine-tuned spacing
         with st.expander("➕ Add User"):
             new_user = st.text_input("New username", key="new_user_input")
             if st.button("Add", key="add_user_btn"):
@@ -548,8 +549,8 @@ def render_daily_tracker_tab():
             df = df.sort_values('date')
             
             # Create tabs for different charts
-            chart_tab1, chart_tab2, chart_tab3, chart_tab4, chart_tab5 = st.tabs([
-                "⚖️ Weight", "🍽️ Calories & Macros", "🚶 Steps", "😴 Sleep", "💪 Energy"
+            chart_tab1, chart_tab2, chart_tab3 = st.tabs([
+                "⚖️ Weight", "🚶 Steps", "😴 Sleep"
             ])
             
             with chart_tab1:
@@ -590,55 +591,6 @@ def render_daily_tracker_tab():
                     st.info("No weight data available for charting")
             
             with chart_tab2:
-                cols_to_plot = []
-                if 'calories' in df.columns and df['calories'].notna().any():
-                    cols_to_plot.append('calories')
-                if 'protein' in df.columns and df['protein'].notna().any():
-                    cols_to_plot.append('protein')
-                if 'carbs' in df.columns and df['carbs'].notna().any():
-                    cols_to_plot.append('carbs')
-                if 'fat' in df.columns and df['fat'].notna().any():
-                    cols_to_plot.append('fat')
-                
-                if cols_to_plot:
-                    nutrition_data = df[['date'] + cols_to_plot].dropna()
-                    
-                    # Format dates as strings (MMM-DD format)
-                    nutrition_data['date_str'] = nutrition_data['date'].dt.strftime('%b-%d')
-                    
-                    fig = go.Figure()
-                    for col in cols_to_plot:
-                        fig.add_trace(go.Scatter(
-                            x=nutrition_data['date_str'],
-                            y=nutrition_data[col],
-                            mode='lines+markers',
-                            name=col.capitalize(),
-                            marker=dict(size=8),
-                            line=dict(width=2)
-                        ))
-                    
-                    fig.update_layout(
-                        xaxis_title='Date',
-                        yaxis_title='Amount',
-                        height=400,
-                        hovermode='x unified',
-                        dragmode='pan',
-                        xaxis=dict(fixedrange=True, type='category'),
-                        yaxis=dict(fixedrange=True)
-                    )
-                    
-                    config = {
-                        'scrollZoom': False,
-                        'displayModeBar': True,
-                        'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
-                    }
-                    
-                    st.plotly_chart(fig, use_container_width=True, config=config)
-                    st.caption(f"Calories and macronutrient intake over {len(nutrition_data)} days tracked")
-                else:
-                    st.info("No nutrition data available for charting")
-            
-            with chart_tab3:
                 if 'steps' in df.columns and df['steps'].notna().any():
                     steps_data = df[['date', 'steps']].dropna()
                     
@@ -675,7 +627,7 @@ def render_daily_tracker_tab():
                 else:
                     st.info("No step data available for charting")
             
-            with chart_tab4:
+            with chart_tab3:
                 if 'sleep_hours' in df.columns and df['sleep_hours'].notna().any():
                     sleep_data = df[['date', 'sleep_hours']].dropna()
                     
@@ -720,51 +672,6 @@ def render_daily_tracker_tab():
                         st.success(f"✅ Average sleep ({avg_sleep:.1f} hrs) is in optimal range")
                 else:
                     st.info("No sleep data available for charting")
-            
-            with chart_tab5:
-                if 'energy_level' in df.columns and df['energy_level'].notna().any():
-                    # Convert energy levels to numeric values for charting
-                    energy_map = {"Very Low": 1, "Low": 2, "Moderate": 3, "High": 4, "Very High": 5}
-                    energy_df = df[['date', 'energy_level']].dropna()
-                    energy_df['energy_numeric'] = energy_df['energy_level'].map(energy_map)
-                    
-                    # Format dates as strings (MMM-DD format)
-                    energy_df['date_str'] = energy_df['date'].dt.strftime('%b-%d')
-                    
-                    fig = go.Figure()
-                    fig.add_trace(go.Scatter(
-                        x=energy_df['date_str'],
-                        y=energy_df['energy_numeric'],
-                        mode='lines+markers',
-                        marker=dict(size=8, color='orange'),
-                        line=dict(width=2, color='orange')
-                    ))
-                    
-                    fig.update_layout(
-                        xaxis_title='Date',
-                        yaxis_title='Energy Level',
-                        height=400,
-                        hovermode='x unified',
-                        dragmode='pan',
-                        xaxis=dict(fixedrange=True, type='category'),
-                        yaxis=dict(
-                            tickmode='array',
-                            tickvals=[1, 2, 3, 4, 5],
-                            ticktext=['Very Low', 'Low', 'Moderate', 'High', 'Very High'],
-                            fixedrange=True
-                        )
-                    )
-                    
-                    config = {
-                        'scrollZoom': False,
-                        'displayModeBar': True,
-                        'modeBarButtonsToRemove': ['zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'lasso2d', 'select2d']
-                    }
-                    
-                    st.plotly_chart(fig, use_container_width=True, config=config)
-                    st.caption(f"Energy levels over {len(energy_df)} days tracked")
-                else:
-                    st.info("No energy level data available for charting")
             
             # Add expandable section to view/edit all entries
             st.markdown("---")
@@ -881,7 +788,7 @@ def main():
     st.markdown("Your personalized fitness companion")
     
     # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "⚡ Quick Reference", "📖 Read Me!"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 TDEE Calculator", "📝 Daily Tracker", "⚡ Quick Reference", "📖 Read Me!", "🔖 Version"])
     
     with tab1:
         render_tdee_calculator_tab()
@@ -910,6 +817,17 @@ def main():
             st.error("README.md file not found!")
         except Exception as e:
             st.error(f"Error loading README: {str(e)}")
+    
+    with tab5:
+        # Display the Version history
+        try:
+            with open('VERSION.md', 'r', encoding='utf-8') as f:
+                version_content = f.read()
+            st.markdown(version_content, unsafe_allow_html=True)
+        except FileNotFoundError:
+            st.error("VERSION.md file not found!")
+        except Exception as e:
+            st.error(f"Error loading Version history: {str(e)}")
 
 
 if __name__ == "__main__":

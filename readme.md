@@ -19,12 +19,10 @@ Research-backed, highly accurate TDEE (Total Daily Energy Expenditure) calculato
 
 ### Daily Tracker Tab
 - 📅 **Track daily metrics**: Weight, calories, protein/carbs/fat, steps, sleep, energy levels
-- 📈 **Visual analytics**: 5 interactive charts showing your complete history
+- 📈 **Visual analytics**: 3 interactive charts showing your complete history
   - Weight progress over time
-  - Calories & macros breakdown
   - Daily step count
   - Sleep duration tracking
-  - Energy level trends
 - 🔍 **Pan & scroll charts**: Navigate through your entire data history
 - ☁️ **Cloud storage**: Data automatically synced to Google Sheets
 - 👥 **Multi-user support**: Track multiple people separately (perfect for families!)

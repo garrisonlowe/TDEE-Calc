@@ -39,12 +39,10 @@ Perfect for families or coaching clients!
 
 ### 2️⃣ Daily Tracker
 - Log daily metrics (weight, calories, macros, steps, sleep, energy)
-- View 5 interactive charts:
+- View 3 interactive charts:
   - Weight Progress
-  - Calories & Macros
   - Daily Steps
   - Sleep Duration
-  - Energy Levels
 - Pan/scroll through entire history
 - Cloud sync via Google Sheets
 - Multi-user support
@@ -107,10 +105,8 @@ Only change what's different from your typical day!
 All charts support **pan/scroll** (zoom disabled for clean viewing):
 
 1. **Weight Chart**: Track overall trend, ignore daily fluctuations
-2. **Calories & Macros**: See if you're hitting targets consistently
-3. **Steps Chart**: Identify activity patterns
-4. **Sleep Chart**: Correlate sleep with energy/performance
-5. **Energy Chart**: Spot red flags (consistent low energy)
+2. **Steps Chart**: Identify activity patterns
+3. **Sleep Chart**: Correlate sleep with energy/performance
 
 **Pro Tip**: Look for correlations! Low energy after poor sleep? Less steps on low-calorie days?
 
