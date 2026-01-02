@@ -64,8 +64,8 @@ class AuthManager:
                       'step_pace', 'job_type', 'sedentary_hours', 'workouts_per_week',
                       'workout_duration', 'workout_type', 'workout_intensity', 
                       'daily_protein', 'daily_carbs', 'daily_fat', 'daily_calories',
-                      'sleep_hours', 'sleep_quality']
-            self.users_worksheet.update('A1:W1', [headers])
+                      'sleep_hours', 'sleep_quality', 'calorie_target', 'target_tdee']
+            self.users_worksheet.update('A1:Y1', [headers])
     
     def _hash_password(self, password: str) -> str:
         """Hash password using SHA256"""
@@ -107,7 +107,9 @@ class AuthManager:
                 user_data.get('daily_fat', 41),
                 user_data.get('daily_calories', 1840),
                 user_data.get('sleep_hours', 9),
-                user_data.get('sleep_quality', 'Good')
+                user_data.get('sleep_quality', 'Good'),
+                user_data.get('calorie_target', 'Maintenance'),
+                user_data.get('target_tdee', 2500)
             ]
             
             self.users_worksheet.append_row(row)
@@ -173,10 +175,12 @@ class AuthManager:
                         user_data.get('daily_fat', row[19] if len(row) > 19 else 41),
                         user_data.get('daily_calories', row[20] if len(row) > 20 else 1840),
                         user_data.get('sleep_hours', row[21] if len(row) > 21 else 9),
-                        user_data.get('sleep_quality', row[22] if len(row) > 22 else 'Good')
+                        user_data.get('sleep_quality', row[22] if len(row) > 22 else 'Good'),
+                        user_data.get('calorie_target', row[23] if len(row) > 23 else 'Maintenance'),
+                        user_data.get('target_tdee', row[24] if len(row) > 24 else 2500)
                     ])
                     
-                    self.users_worksheet.update(f'A{i}:W{i}', [updated_row])
+                    self.users_worksheet.update(f'A{i}:Y{i}', [updated_row])
                     return True
             
             return False

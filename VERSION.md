@@ -1,5 +1,23 @@
 # Version History
 
+## Version 1.0.2 🍽️
+**Release Date:** January 2, 2026
+
+### New Features
+
+#### Meals Tracker Tab
+- **Calorie Target Selection**: Choose your goal (Aggressive Fat Loss, Moderate Fat Loss, Maintenance, Lean Bulk, Standard Bulk)
+- **Daily Calorie Targets**: Automatic calculation based on TDEE and goal type
+- **Meal Logging**: Track individual meals with calories and macros (protein, carbs, fat)
+- **Progress Visualization**: Real-time progress bar showing calories consumed vs target
+- **Smart Status Messages**: Get feedback on whether you're on target, over, or under
+- **Macro Breakdown**: View total protein, carbs, and fat for each day
+- **Date Navigation**: Review and log meals for any date with Yesterday/Today buttons
+- **Meal Management**: Delete individual meals with one click
+- **Google Sheets Integration**: All meal data persists across sessions and devices
+
+---
+
 ## Version 1.0.1 🔐
 **Release Date:** January 2, 2026
 
@@ -58,7 +76,6 @@
 - Automatic Google Sheets sync
 - Persistent data across sessions
 - Accessible from any device
-- JSON fallback for local development
 
 #### Documentation
 - Quick Reference Guide (in-app)

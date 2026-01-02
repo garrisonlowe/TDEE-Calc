@@ -15,6 +15,7 @@ import extra_streamlit_components as stx
 # Import the calculator logic and tracker
 from tdee_calculator import TDEECalculator
 from daily_tracker import DailyTracker
+from meals_tracker import MealsTracker
 from auth import AuthManager
 
 
@@ -974,13 +975,167 @@ def render_create_account_dialog():
                 st.error("Username already exists or creation failed")
 
 
+def render_meals_tab():
+    """Render Meals tab for tracking individual meals and daily progress"""
+    st.header("🍽️ Meal Tracker")
+    
+    # Check if user is logged in
+    if not st.session_state.get('authenticated', False):
+        st.warning("⚠️ Please log in to track meals and view your calorie target")
+        if st.button("🔐 Login", type="primary", key="meals_login_btn"):
+            st.session_state.show_login_dialog = True
+            st.rerun()
+        return
+    
+    username = st.session_state.get('username')
+    profile = st.session_state.get('user_profile', {})
+    
+    # Initialize meals tracker
+    if 'meals_tracker' not in st.session_state:
+        st.session_state.meals_tracker = MealsTracker(use_sheets=True, user=username)
+    
+    # Get user's calorie target and TDEE
+    calorie_target_type = profile.get('calorie_target', 'Maintenance')
+    target_tdee = profile.get('target_tdee', 2500)
+    
+    # Calculate actual calorie target based on type
+    target_map = {
+        'Aggressive Fat Loss': -750,
+        'Moderate Fat Loss': -500,
+        'Maintenance': 0,
+        'Lean Bulk': 200,
+        'Standard Bulk': 350
+    }
+    
+    calorie_adjustment = target_map.get(calorie_target_type, 0)
+    daily_target = target_tdee + calorie_adjustment
+    
+    # Show target info
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Your Goal", calorie_target_type)
+    with col2:
+        st.metric("TDEE", f"{int(target_tdee)} cal")
+    with col3:
+        st.metric("Daily Target", f"{int(daily_target)} cal")
+    
+    st.markdown("---")
+    
+    # Date selector
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        if st.button("← Yesterday", key="meals_yesterday"):
+            if 'meal_date' not in st.session_state:
+                st.session_state.meal_date = datetime.now().date() - timedelta(days=1)
+            else:
+                st.session_state.meal_date = st.session_state.meal_date - timedelta(days=1)
+            st.rerun()
+    with col2:
+        if 'meal_date' not in st.session_state:
+            st.session_state.meal_date = datetime.now().date()
+        selected_date = st.date_input("Date", value=st.session_state.meal_date, key="meal_date_picker")
+        st.session_state.meal_date = selected_date
+    with col3:
+        if st.button("Today →", key="meals_today"):
+            st.session_state.meal_date = datetime.now().date()
+            st.rerun()
+    
+    date_str = selected_date.strftime("%Y-%m-%d")
+    
+    # Get meals from tracker
+    meals = st.session_state.meals_tracker.get_meals_for_date(date_str)
+    
+    # Calculate today's totals
+    total_calories = sum(meal['calories'] for meal in meals)
+    total_protein = sum(meal.get('protein', 0) for meal in meals)
+    total_carbs = sum(meal.get('carbs', 0) for meal in meals)
+    total_fat = sum(meal.get('fat', 0) for meal in meals)
+    
+    # Progress bar
+    progress = min(total_calories / daily_target, 1.5) if daily_target > 0 else 0
+    st.subheader(f"📊 Today's Progress: {int(total_calories)} / {int(daily_target)} calories")
+    st.progress(min(progress, 1.0))
+    
+    # Status message
+    remaining = daily_target - total_calories
+    if abs(remaining) < 50:
+        st.success(f"✅ Perfect! You're right on target!")
+    elif remaining > 0:
+        st.info(f"🍴 {int(remaining)} calories remaining for today")
+    else:
+        st.warning(f"⚠️ {int(abs(remaining))} calories over target")
+    
+    # Macro breakdown
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Protein", f"{int(total_protein)}g")
+    with col2:
+        st.metric("Carbs", f"{int(total_carbs)}g")
+    with col3:
+        st.metric("Fat", f"{int(total_fat)}g")
+    
+    st.markdown("---")
+    
+    # Add new meal
+    st.subheader("➕ Log a Meal")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        meal_name = st.text_input("Meal Name", placeholder="e.g., Chicken & Rice, Protein Shake")
+        meal_calories = st.number_input("Calories", min_value=0, max_value=5000, value=0, step=10)
+    with col2:
+        meal_protein = st.number_input("Protein (g)", min_value=0, max_value=500, value=0, step=1)
+        col_a, col_b = st.columns(2)
+        with col_a:
+            meal_carbs = st.number_input("Carbs (g)", min_value=0, max_value=1000, value=0, step=1)
+        with col_b:
+            meal_fat = st.number_input("Fat (g)", min_value=0, max_value=300, value=0, step=1)
+    
+    if st.button("💾 Add Meal", type="primary"):
+        if meal_name and meal_calories > 0:
+            meal_entry = {
+                'name': meal_name,
+                'calories': meal_calories,
+                'protein': meal_protein,
+                'carbs': meal_carbs,
+                'fat': meal_fat,
+                'time': datetime.now().strftime("%H:%M")
+            }
+            # Save to tracker instead of session state
+            st.session_state.meals_tracker.add_meal(date_str, meal_entry)
+            st.success(f"✅ Added {meal_name}!")
+            st.rerun()
+        else:
+            st.error("Please enter a meal name and calories")
+    
+    st.markdown("---")
+    
+    # Display meals for the day
+    if meals:
+        st.subheader(f"🍽️ Meals for {date_str}")
+        
+        for idx, meal in enumerate(meals):
+            col1, col2, col3 = st.columns([3, 2, 1])
+            with col1:
+                st.write(f"**{meal['name']}** ({meal.get('time', 'N/A')})")
+            with col2:
+                st.write(f"{int(meal['calories'])} cal | P: {int(meal.get('protein', 0))}g C: {int(meal.get('carbs', 0))}g F: {int(meal.get('fat', 0))}g")
+            with col3:
+                if st.button("🗑️", key=f"delete_meal_{idx}"):
+                    # Delete from tracker instead of session state
+                    st.session_state.meals_tracker.delete_meal(date_str, idx)
+                    st.rerun()
+    else:
+        st.info("No meals logged for this day yet. Add your first meal above!")
+
+
 def render_my_profile_tab():
     """Render My Profile tab for editing user settings"""
     st.header("👤 My Profile")
     
     if not st.session_state.get('authenticated', False):
         st.warning("⚠️ Please log in to view and edit your profile")
-        if st.button("🔐 Login", type="primary"):
+        if st.button("🔐 Login", type="primary", key="profile_login_btn"):
             st.session_state.show_login_dialog = True
             st.rerun()
         return
@@ -1067,6 +1222,13 @@ def render_my_profile_tab():
             workout_intensity = st.select_slider("Workout Intensity",
                                                 options=["Low", "Moderate", "High", "Very High"],
                                                 value=profile.get('workout_intensity', 'High'))
+            
+            st.markdown("**Goals**")
+            calorie_target = st.selectbox("Calorie Target Goal",
+                                         ["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"],
+                                         index=["Aggressive Fat Loss", "Moderate Fat Loss", "Maintenance", "Lean Bulk", "Standard Bulk"].index(profile.get('calorie_target', 'Maintenance')))
+            target_tdee = st.number_input("Your TDEE (cal/day)", 1000, 6000, int(profile.get('target_tdee', 2500)), 50,
+                                         help="Use the TDEE Calculator to find your accurate TDEE")
         
         if st.form_submit_button("💾 Save Profile", type="primary", use_container_width=True):
             updated_data = {
@@ -1090,7 +1252,9 @@ def render_my_profile_tab():
                 'daily_fat': daily_fat,
                 'daily_calories': daily_calories,
                 'sleep_hours': sleep_hours,
-                'sleep_quality': sleep_quality
+                'sleep_quality': sleep_quality,
+                'calorie_target': calorie_target,
+                'target_tdee': target_tdee
             }
             
             auth = AuthManager()
@@ -1165,7 +1329,9 @@ def main():
                             'daily_fat': int(row[19]) if row[19] else 41,
                             'daily_calories': int(row[20]) if row[20] else 1840,
                             'sleep_hours': float(row[21]) if row[21] else 9.0,
-                            'sleep_quality': row[22] if row[22] else 'Good'
+                            'sleep_quality': row[22] if row[22] else 'Good',
+                            'calorie_target': row[23] if len(row) > 23 and row[23] else 'Maintenance',
+                            'target_tdee': int(row[24]) if len(row) > 24 and row[24] else 2500
                         }
                         st.session_state.authenticated = True
                         st.session_state.username = stored_username
@@ -1232,9 +1398,10 @@ def main():
         st.session_state.current_tab = 0
     
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 TDEE Calculator", 
-        "📝 Daily Tracker", 
+        "📝 Daily Tracker",
+        "🍽️ Meals",
         "👤 My Profile",
         "⚡ Quick Reference", 
         "🔖 Version"
@@ -1249,9 +1416,12 @@ def main():
         render_daily_tracker_tab(user_id)
     
     with tab3:
-        render_my_profile_tab()
+        render_meals_tab()
     
     with tab4:
+        render_my_profile_tab()
+    
+    with tab5:
         # Display the Quick Reference Guide
         try:
             with open('QUICK_REFERENCE.md', 'r', encoding='utf-8') as f:
@@ -1262,7 +1432,7 @@ def main():
         except Exception as e:
             st.error(f"Error loading Quick Reference: {str(e)}")
     
-    with tab5:
+    with tab6:
         # Display the Version history
         try:
             with open('VERSION.md', 'r', encoding='utf-8') as f:
