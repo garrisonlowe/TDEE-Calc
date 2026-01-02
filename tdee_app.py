@@ -210,7 +210,7 @@ def render_tdee_calculator_tab():
     
     st.markdown(f"""
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 20px;">
-            <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE: <span style="color: #F0DEDA; text-decoration: none; font-size: 3em;">{tdee_to_display:.0f}</span> calories per day</h1>
+            <h1 style="color: white; margin: 0; font-size: 4em;">Your TDEE: <span style="color: #F0DEDA; text-decoration: none;">{tdee_to_display:.0f}</span> calories per day</h1>
             <p style="color: #e0e0e0; margin: 5px 0 0 0; font-size: 0.9em;">{tdee_source}</p>
         </div>
     """, unsafe_allow_html=True)
